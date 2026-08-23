@@ -48,7 +48,7 @@ app.post("/api/otp/send", async (req, res) => {
   }
 
   const { error: sendError } = await resend.emails.send({
-    from: process.env.RESEND_FROM_EMAIL || "onboarding@resend.dev",
+    from: process.env.RESEND_API_KEY || "onboarding@resend.dev",
     to: email,
     subject: "Your login code",
     html: `<p>Your login code is <strong>${data.properties.email_otp}</strong>. It expires shortly.</p>`,
