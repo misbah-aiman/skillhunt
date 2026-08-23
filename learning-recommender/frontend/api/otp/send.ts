@@ -1,5 +1,5 @@
-import { supabase } from "../_lib/supabase";
-import { resend } from "../_lib/resend";
+import { supabase } from "../_lib/supabase.js";
+import { resend } from "../_lib/resend.js";
 
 export async function POST(request: Request) {
   const { email } = await request.json();
