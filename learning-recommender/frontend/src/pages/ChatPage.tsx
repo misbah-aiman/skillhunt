@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import type { Session } from '@supabase/supabase-js';
-import type { ChatMessage } from '../lib/types';
+import type { ChatMessage, Skill } from '../lib/types';
+import { SuggestionsCard, type ChatGap } from '../components/SuggestionsCard';
 import './ChatPage.css';
 
 interface ChatPageProps {
@@ -12,6 +13,10 @@ export function ChatPage({ session }: ChatPageProps) {
   const [input, setInput] = useState('');
   const [sending, setSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [assessmentComplete, setAssessmentComplete] = useState(false);
+  const [skillsIdentified, setSkillsIdentified] = useState<Skill[]>([]);
+  const [gapsFound, setGapsFound] = useState<ChatGap[]>([]);
+  const [topicsToAdd, setTopicsToAdd] = useState<string[]>([]);
   const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -46,6 +51,10 @@ export function ChatPage({ session }: ChatPageProps) {
     }
 
     setMessages((prev) => [...prev, { role: 'assistant', content: json.reply }]);
+    setAssessmentComplete(Boolean(json.assessmentComplete));
+    setSkillsIdentified(json.skillsIdentified ?? []);
+    setGapsFound(json.gapsFound ?? []);
+    setTopicsToAdd(json.topicsToAdd ?? []);
     setSending(false);
   }
 
@@ -82,6 +91,15 @@ export function ChatPage({ session }: ChatPageProps) {
           Send
         </button>
       </form>
+
+      {assessmentComplete && (
+        <SuggestionsCard
+          session={session}
+          skillsIdentified={skillsIdentified}
+          gapsFound={gapsFound}
+          topicsToAdd={topicsToAdd}
+        />
+      )}
     </div>
   );
 }

@@ -1,0 +1,40 @@
+.suggestions-card {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-top: 1.5rem;
+  padding: 1.25rem;
+  border: 1px solid #646cff55;
+  border-radius: 12px;
+  background-color: #646cff11;
+  text-align: left;
+}
+
+.suggestions-card h2 {
+  font-size: 1.1rem;
+  margin: 0;
+}
+
+.suggestions-card section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.suggestions-card h3 {
+  font-size: 0.95rem;
+  margin: 0;
+  color: #888;
+}
+
+.gap-list {
+  margin: 0;
+  padding-left: 1.2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.suggestions-card button {
+  align-self: flex-start;
+}
