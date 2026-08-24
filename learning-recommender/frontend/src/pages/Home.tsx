@@ -1,4 +1,3 @@
-import { supabase } from '../lib/supabaseClient';
 import './Home.css';
 
 const quote = {
@@ -15,9 +14,6 @@ export function Home() {
         "{quote.text}"
         <footer>&mdash; {quote.author}</footer>
       </blockquote>
-      <button className="link-button" onClick={() => supabase.auth.signOut()}>
-        Sign Out
-      </button>
     </main>
   );
 }
