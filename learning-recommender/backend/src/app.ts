@@ -3,6 +3,7 @@ import { supabase } from "./lib/supabase.js";
 import { transporter } from "./lib/mailer.js";
 import { authenticate } from "./middleware/authenticate.js";
 import { profileRouter } from "./routes/profile.js";
+import { topicsRouter } from "./routes/topics.js";
 
 export const app = express();
 
@@ -72,3 +73,4 @@ app.post("/api/otp/send", async (req, res) => {
 });
 
 app.use("/api/profile", authenticate, profileRouter);
+app.use("/api/topics", topicsRouter);

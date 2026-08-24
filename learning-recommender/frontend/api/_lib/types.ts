@@ -3,6 +3,62 @@ export interface Skill {
   level: string;
 }
 
+export type Difficulty = "beginner" | "intermediate" | "advanced";
+
+// Maps to the public.topics table (see supabase/migrations). A
+// browsable catalog entry, not owned by a particular user.
+export interface Topic {
+  id: string;
+  title: string;
+  description: string | null;
+  category: string | null;
+  difficulty: Difficulty;
+  prerequisites: string[];
+  tags: string[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface TopicRow {
+  id: string;
+  title: string;
+  description: string | null;
+  category: string | null;
+  difficulty: Difficulty;
+  prerequisites: string[];
+  tags: string[];
+  created_at: string;
+  updated_at: string;
+}
+
+export function toTopic(row: TopicRow): Topic {
+  return {
+    id: row.id,
+    title: row.title,
+    description: row.description,
+    category: row.category,
+    difficulty: row.difficulty,
+    prerequisites: row.prerequisites,
+    tags: row.tags,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  };
+}
+
+export type ResourceType = "video" | "article" | "course";
+
+// Maps to the public.resources table (see supabase/migrations).
+export interface Resource {
+  id: string;
+  topicId: string;
+  title: string;
+  url: string;
+  type: ResourceType;
+  provider: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
 // Maps to the public.profiles table (see supabase/migrations).
 // Postgres columns are snake_case; this type uses the camelCase
 // shape the app code works with.
