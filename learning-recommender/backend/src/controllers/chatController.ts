@@ -1,11 +1,16 @@
-import Anthropic from "@anthropic-ai/sdk";
-import { zodOutputFormat } from "@anthropic-ai/sdk/helpers/zod";
-import { z } from "zod";
-import type { Profile, Skill } from "../lib/types.js";
+import { ApiError, GoogleGenAI, Type } from "@google/genai";
+import type { ChatMessage, Profile, Skill } from "../lib/types.js";
 import { getProfile, updateProfile } from "../lib/profileController.js";
 
-// Reads ANTHROPIC_API_KEY from the environment — never hardcode the key.
-const client = new Anthropic();
+// Reads GEMINI_API_KEY from the environment — never hardcode the key.
+const client = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+
+// "-preview" model: Google may change/retire it without the usual notice
+// (gemini-3-pro-preview was already retired mid-development). Using flash
+// because this API key's free tier has zero quota for the pro model
+// (confirmed via a live 429: "limit: 0" on generate_content_free_tier
+// for gemini-3.1-pro) — switch to a "-pro-" variant once billing is on.
+const MODEL = "gemini-3-flash-preview";
 
 // The onboarding persona: introduces itself, draws out the user's current
 // skills/experience/goals, runs a short assessment, and — once it has
@@ -35,33 +40,62 @@ On every turn, populate these fields from what's been said so far:
 Only set assessmentComplete to true once you're confident in these findings —
 don't rush it after a single message.`;
 
-const ChatResponseSchema = z.object({
-  reply: z.string().describe("The assistant's conversational reply to the user"),
-  assessmentComplete: z
-    .boolean()
-    .describe("True once enough is known to finalize skillsIdentified, gapsFound, and topicsToAdd"),
-  skillsIdentified: z
-    .array(
-      z.object({
-        name: z.string().describe("Skill name"),
-        level: z.string().describe("The user's level at this skill, e.g. beginner/intermediate/advanced"),
-      }),
-    )
-    .describe("Skills the user already has, as stated or clearly implied in the conversation"),
-  gapsFound: z
-    .array(
-      z.object({
-        skill: z.string().describe("The skill or topic identified as a gap"),
-        reason: z.string().describe("Why this is a gap, grounded in what the user has said"),
-      }),
-    )
-    .describe("Specific gaps between the user's current skills and their stated goals"),
-  topicsToAdd: z
-    .array(z.string())
-    .describe("Topic or interest names to add to the user's profile, based on the gaps found"),
-});
+const CHAT_RESPONSE_SCHEMA = {
+  type: Type.OBJECT,
+  properties: {
+    reply: { type: Type.STRING, description: "The assistant's conversational reply to the user" },
+    assessmentComplete: {
+      type: Type.BOOLEAN,
+      description: "True once enough is known to finalize skillsIdentified, gapsFound, and topicsToAdd",
+    },
+    skillsIdentified: {
+      type: Type.ARRAY,
+      description: "Skills the user already has, as stated or clearly implied in the conversation",
+      items: {
+        type: Type.OBJECT,
+        properties: {
+          name: { type: Type.STRING, description: "Skill name" },
+          level: {
+            type: Type.STRING,
+            description: "The user's level at this skill, e.g. beginner/intermediate/advanced",
+          },
+        },
+        required: ["name", "level"],
+      },
+    },
+    gapsFound: {
+      type: Type.ARRAY,
+      description: "Specific gaps between the user's current skills and their stated goals",
+      items: {
+        type: Type.OBJECT,
+        properties: {
+          skill: { type: Type.STRING, description: "The skill or topic identified as a gap" },
+          reason: { type: Type.STRING, description: "Why this is a gap, grounded in what the user has said" },
+        },
+        required: ["skill", "reason"],
+      },
+    },
+    topicsToAdd: {
+      type: Type.ARRAY,
+      description: "Topic or interest names to add to the user's profile, based on the gaps found",
+      items: { type: Type.STRING },
+    },
+  },
+  required: ["reply", "assessmentComplete", "skillsIdentified", "gapsFound", "topicsToAdd"],
+};
 
-export type ChatGap = z.infer<typeof ChatResponseSchema>["gapsFound"][number];
+export interface ChatGap {
+  skill: string;
+  reason: string;
+}
+
+interface ParsedChatResponse {
+  reply: string;
+  assessmentComplete: boolean;
+  skillsIdentified: Skill[];
+  gapsFound: ChatGap[];
+  topicsToAdd: string[];
+}
 
 export interface ChatResult {
   reply: string | null;
@@ -83,36 +117,45 @@ function emptyResult(error: string): ChatResult {
   };
 }
 
-export async function sendChatMessage(messages: Anthropic.MessageParam[]): Promise<ChatResult> {
+export async function sendChatMessage(messages: ChatMessage[]): Promise<ChatResult> {
   try {
-    const response = await client.messages.parse({
-      model: "claude-opus-5",
-      max_tokens: 16000,
-      thinking: { type: "adaptive" },
-      system: SYSTEM_PROMPT,
-      messages,
-      output_config: {
-        format: zodOutputFormat(ChatResponseSchema),
+    const response = await client.models.generateContent({
+      model: MODEL,
+      contents: messages.map((message) => ({
+        role: message.role === "assistant" ? "model" : "user",
+        parts: [{ text: message.content }],
+      })),
+      config: {
+        systemInstruction: SYSTEM_PROMPT,
+        responseMimeType: "application/json",
+        responseJsonSchema: CHAT_RESPONSE_SCHEMA,
       },
     });
 
-    if (!response.parsed_output) {
-      return emptyResult("Failed to parse assistant response");
+    if (!response.text) {
+      return emptyResult("No response from Gemini");
     }
 
-    const { reply, assessmentComplete, skillsIdentified, gapsFound, topicsToAdd } = response.parsed_output;
+    const parsed = JSON.parse(response.text) as ParsedChatResponse;
 
-    return { reply, assessmentComplete, skillsIdentified, gapsFound, topicsToAdd, error: null };
+    return {
+      reply: parsed.reply,
+      assessmentComplete: parsed.assessmentComplete,
+      skillsIdentified: parsed.skillsIdentified,
+      gapsFound: parsed.gapsFound,
+      topicsToAdd: parsed.topicsToAdd,
+      error: null,
+    };
   } catch (error) {
-    if (error instanceof Anthropic.AuthenticationError) {
-      return emptyResult("Invalid Anthropic API key");
-    }
+    if (error instanceof ApiError) {
+      if (error.status === 401 || error.status === 403) {
+        return emptyResult("Invalid Gemini API key");
+      }
 
-    if (error instanceof Anthropic.RateLimitError) {
-      return emptyResult("Rate limited by the Anthropic API, try again shortly");
-    }
+      if (error.status === 429) {
+        return emptyResult("Rate limited by the Gemini API, try again shortly");
+      }
 
-    if (error instanceof Anthropic.APIError) {
       return emptyResult(error.message);
     }
 

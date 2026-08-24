@@ -14,13 +14,12 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.120.0",
+    "@google/genai": "^2.18.0",
     "@supabase/supabase-js": "^2.112.3",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
     "nodemailer": "^9.0.5",
-    "ws": "^8.21.3",
-    "zod": "^4.4.3"
+    "ws": "^8.21.3"
   },
   "devDependencies": {
     "@types/express": "^5.0.6",

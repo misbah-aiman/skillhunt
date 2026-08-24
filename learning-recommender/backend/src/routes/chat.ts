@@ -1,9 +1,8 @@
 import { Router } from "express";
-import type Anthropic from "@anthropic-ai/sdk";
 import { applySuggestionsToProfile, sendChatMessage, type ApplySuggestionsInput } from "../controllers/chatController.js";
-import type { Skill } from "../lib/types.js";
+import type { ChatMessage, Skill } from "../lib/types.js";
 
-function isChatMessage(value: unknown): value is Anthropic.MessageParam {
+function isChatMessage(value: unknown): value is ChatMessage {
   if (typeof value !== "object" || value === null) return false;
   const v = value as Record<string, unknown>;
   return (v.role === "user" || v.role === "assistant") && typeof v.content === "string";
