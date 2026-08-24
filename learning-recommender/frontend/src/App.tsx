@@ -5,6 +5,7 @@ import { Login } from './pages/Login';
 import { Home } from './pages/Home';
 import { ProfilePage } from './pages/ProfilePage';
 import { TopicsPage } from './pages/TopicsPage';
+import { ChatPage } from './pages/ChatPage';
 import { NavBar, type View } from './components/NavBar';
 import { OnboardedRoute } from './components/OnboardedRoute';
 import './App.css';
@@ -76,6 +77,7 @@ function App() {
         <NavBar view={view} onNavigate={setView} onSignOut={() => supabase.auth.signOut()} />
         {view === 'home' && <Home />}
         {view === 'topics' && <TopicsPage />}
+        {view === 'chat' && <ChatPage session={session} />}
         {view === 'profile' && <ProfilePage session={session} />}
       </OnboardedRoute>
     );
