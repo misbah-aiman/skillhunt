@@ -10,7 +10,7 @@ export async function GET(request: Request) {
     return Response.json({ ok: false, error: "Topic id is required" }, { status: 400 });
   }
 
-  const { topic, error, notFound } = await getTopicById(id);
+  const { topic, resources, error, notFound } = await getTopicById(id);
 
   if (notFound) {
     return Response.json({ ok: false, error: "Topic not found" }, { status: 404 });
@@ -20,5 +20,5 @@ export async function GET(request: Request) {
     return Response.json({ ok: false, error }, { status: 500 });
   }
 
-  return Response.json({ ok: true, topic });
+  return Response.json({ ok: true, topic, resources });
 }

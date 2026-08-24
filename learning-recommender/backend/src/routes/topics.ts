@@ -33,7 +33,7 @@ topicsRouter.get("/", async (req, res) => {
 });
 
 topicsRouter.get("/:id", async (req, res) => {
-  const { topic, error, notFound } = await getTopicById(req.params.id);
+  const { topic, resources, error, notFound } = await getTopicById(req.params.id);
 
   if (notFound) {
     res.status(404).json({ ok: false, error: "Topic not found" });
@@ -45,5 +45,5 @@ topicsRouter.get("/:id", async (req, res) => {
     return;
   }
 
-  res.json({ ok: true, topic });
+  res.json({ ok: true, topic, resources });
 });

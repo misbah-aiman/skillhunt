@@ -1,13 +1,22 @@
 import { supabase } from "./supabase.js";
-import { toTopic, type Difficulty, type Topic, type TopicRow } from "./types.js";
+import {
+  toResource,
+  toTopic,
+  type Difficulty,
+  type Resource,
+  type ResourceRow,
+  type Topic,
+  type TopicRow,
+} from "./types.js";
 
 export interface TopicListResult {
   topics: Topic[] | null;
   error: string | null;
 }
 
-export interface TopicResult {
+export interface TopicDetailResult {
   topic: Topic | null;
+  resources: Resource[] | null;
   error: string | null;
   notFound?: boolean;
 }
@@ -43,16 +52,22 @@ export async function getAllTopics(filters: TopicFilters = {}): Promise<TopicLis
   return { topics: (data as TopicRow[]).map(toTopic), error: null };
 }
 
-export async function getTopicById(id: string): Promise<TopicResult> {
-  const { data, error } = await supabase.from("topics").select("*").eq("id", id).maybeSingle();
+export async function getTopicById(id: string): Promise<TopicDetailResult> {
+  const { data, error } = await supabase.from("topics").select("*, resources(*)").eq("id", id).maybeSingle();
 
   if (error) {
-    return { topic: null, error: error.message };
+    return { topic: null, resources: null, error: error.message };
   }
 
   if (!data) {
-    return { topic: null, error: null, notFound: true };
+    return { topic: null, resources: null, error: null, notFound: true };
   }
 
-  return { topic: toTopic(data as TopicRow), error: null };
+  const { resources, ...topicRow } = data as TopicRow & { resources: ResourceRow[] };
+
+  return {
+    topic: toTopic(topicRow),
+    resources: resources.map(toResource),
+    error: null,
+  };
 }

@@ -4,6 +4,7 @@ import { supabase } from './lib/supabaseClient';
 import { Login } from './pages/Login';
 import { Home } from './pages/Home';
 import { ProfilePage } from './pages/ProfilePage';
+import { TopicsPage } from './pages/TopicsPage';
 import { NavBar, type View } from './components/NavBar';
 import { OnboardedRoute } from './components/OnboardedRoute';
 import './App.css';
@@ -73,7 +74,9 @@ function App() {
     return (
       <OnboardedRoute session={session} isOnboarded={isOnboarded} onOnboarded={() => setIsOnboarded(true)}>
         <NavBar view={view} onNavigate={setView} onSignOut={() => supabase.auth.signOut()} />
-        {view === 'home' ? <Home /> : <ProfilePage session={session} />}
+        {view === 'home' && <Home />}
+        {view === 'topics' && <TopicsPage />}
+        {view === 'profile' && <ProfilePage session={session} />}
       </OnboardedRoute>
     );
   }

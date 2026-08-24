@@ -59,6 +59,30 @@ export interface Resource {
   updatedAt: string;
 }
 
+export interface ResourceRow {
+  id: string;
+  topic_id: string;
+  title: string;
+  url: string;
+  type: ResourceType;
+  provider: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export function toResource(row: ResourceRow): Resource {
+  return {
+    id: row.id,
+    topicId: row.topic_id,
+    title: row.title,
+    url: row.url,
+    type: row.type,
+    provider: row.provider,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  };
+}
+
 // Maps to the public.profiles table (see supabase/migrations).
 // Postgres columns are snake_case; this type uses the camelCase
 // shape the app code works with.
