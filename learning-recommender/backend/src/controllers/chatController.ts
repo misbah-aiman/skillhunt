@@ -1,7 +1,8 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { zodOutputFormat } from "@anthropic-ai/sdk/helpers/zod";
 import { z } from "zod";
-import type { Skill } from "../lib/types.js";
+import type { Profile, Skill } from "../lib/types.js";
+import { getProfile, updateProfile } from "../lib/profileController.js";
 
 // Reads ANTHROPIC_API_KEY from the environment — never hardcode the key.
 const client = new Anthropic();
@@ -118,4 +119,78 @@ export async function sendChatMessage(messages: Anthropic.MessageParam[]): Promi
     const fallbackMessage = error instanceof Error ? error.message : "Failed to get chat response";
     return emptyResult(fallbackMessage);
   }
+}
+
+export interface ApplySuggestionsInput {
+  skillsIdentified?: Skill[];
+  topicsToAdd?: string[];
+}
+
+export interface ApplySuggestionsResult {
+  profile: Profile | null;
+  error: string | null;
+  notFound?: boolean;
+}
+
+// Adds a new skill, or replaces the level of an existing one (matched
+// case-insensitively by name) — a re-assessment can update a stale level.
+function mergeSkills(existing: Skill[], additions: Skill[]): Skill[] {
+  const merged = [...existing];
+
+  for (const addition of additions) {
+    const index = merged.findIndex((skill) => skill.name.toLowerCase() === addition.name.toLowerCase());
+    if (index === -1) {
+      merged.push(addition);
+    } else {
+      merged[index] = addition;
+    }
+  }
+
+  return merged;
+}
+
+function mergeInterests(existing: string[], additions: string[]): string[] {
+  const merged = [...existing];
+
+  for (const addition of additions) {
+    if (!merged.some((interest) => interest.toLowerCase() === addition.toLowerCase())) {
+      merged.push(addition);
+    }
+  }
+
+  return merged;
+}
+
+// Applies confirmed chat suggestions to the learner's profile: skills
+// merge into profile.skills, topics merge into profile.interests.
+// gapsFound has no profile field to land in, so it's not applied here.
+export async function applySuggestionsToProfile(
+  userId: string,
+  input: ApplySuggestionsInput,
+): Promise<ApplySuggestionsResult> {
+  const { profile: existing, error: getError } = await getProfile(userId);
+
+  if (getError) {
+    return { profile: null, error: getError };
+  }
+
+  if (!existing) {
+    return { profile: null, error: null, notFound: true };
+  }
+
+  const skills = input.skillsIdentified ? mergeSkills(existing.skills, input.skillsIdentified) : existing.skills;
+  const interests = input.topicsToAdd ? mergeInterests(existing.interests, input.topicsToAdd) : existing.interests;
+
+  const { profile, error } = await updateProfile(userId, {
+    skills,
+    interests,
+    goals: existing.goals,
+    bio: existing.bio,
+  });
+
+  if (error) {
+    return { profile: null, error };
+  }
+
+  return { profile, error: null };
 }
