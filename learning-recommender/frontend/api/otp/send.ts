@@ -1,5 +1,5 @@
 import { supabase } from "../_lib/supabase.js";
-import { resend } from "../_lib/resend.js";
+import { transporter } from "../_lib/mailer.js";
 
 export async function POST(request: Request) {
   const { email } = await request.json();
@@ -19,15 +19,24 @@ export async function POST(request: Request) {
     return Response.json({ ok: false, error: linkError.message }, { status: 500 });
   }
 
-  const { error: sendError } = await resend.emails.send({
-    from: process.env.RESEND_FROM_EMAIL || "onboarding@resend.dev",
-    to: email,
-    subject: "Your login code",
-    html: `<p>Your login code is <strong>${data.properties.email_otp}</strong>. It expires shortly.</p>`,
-  });
+  const code = data.properties.email_otp;
 
-  if (sendError) {
-    return Response.json({ ok: false, error: sendError.message }, { status: 500 });
+  try {
+    await transporter.sendMail({
+      from: `"SkillHunt" <${process.env.GMAIL_USER}>`,
+      to: email,
+      subject: "Your SkillHunt login code",
+      text: `Your SkillHunt verification code is ${code}. It expires in 10 minutes.`,
+      html: `<div style="font-family: Arial, sans-serif; max-width: 480px; margin: 0 auto;">
+        <h1 style="color: #111;">SkillHunt</h1>
+        <p>Your verification code is:</p>
+        <p style="font-size: 32px; font-weight: bold; letter-spacing: 6px;">${code}</p>
+        <p>This code expires in 10 minutes.</p>
+      </div>`,
+    });
+  } catch (sendError) {
+    const message = sendError instanceof Error ? sendError.message : "Failed to send email";
+    return Response.json({ ok: false, error: message }, { status: 500 });
   }
 
   return Response.json({ ok: true });
