@@ -1,0 +1,46 @@
+.profile-empty {
+  color: #888;
+  font-size: 0.9em;
+  margin: 0;
+}
+
+.tag-input {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.tag-input input {
+  flex: 1;
+  padding: 0.5em 0.7em;
+  font-size: 1em;
+  border-radius: 8px;
+  border: 1px solid #888;
+  font-family: inherit;
+}
+
+.tag-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.3em 0.7em;
+  border-radius: 999px;
+  background-color: #646cff22;
+  border: 1px solid #646cff55;
+  font-size: 0.9em;
+}
+
+.tag button {
+  border: none;
+  background: none;
+  padding: 0;
+  color: inherit;
+  font-size: 1em;
+  line-height: 1;
+  cursor: pointer;
+}

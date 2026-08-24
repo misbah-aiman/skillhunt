@@ -1,0 +1,10 @@
+.profile-setup {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+
+.profile-setup-intro {
+  color: #888;
+  margin-top: -0.5rem;
+}

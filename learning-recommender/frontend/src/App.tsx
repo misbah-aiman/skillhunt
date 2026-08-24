@@ -3,14 +3,16 @@ import type { Session } from '@supabase/supabase-js';
 import { supabase } from './lib/supabaseClient';
 import { Login } from './pages/Login';
 import { Home } from './pages/Home';
-import { Profile } from './pages/Profile';
+import { ProfilePage } from './pages/ProfilePage';
 import { NavBar, type View } from './components/NavBar';
+import { OnboardedRoute } from './components/OnboardedRoute';
 import './App.css';
 
 function App() {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const [view, setView] = useState<View>('home');
+  const [isOnboarded, setIsOnboarded] = useState<boolean | null>(null);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
@@ -25,16 +27,54 @@ function App() {
     return () => subscription.subscription.unsubscribe();
   }, []);
 
+  useEffect(() => {
+    if (!session) {
+      setIsOnboarded(null);
+      return;
+    }
+
+    const accessToken = session.access_token;
+    let cancelled = false;
+
+    // A user counts as onboarded once they have a profile row; there's no
+    // separate flag to track since profile creation only happens here.
+    async function checkOnboarding() {
+      try {
+        const res = await fetch('/api/profile', {
+          headers: { Authorization: `Bearer ${accessToken}` },
+        });
+        const json = await res.json();
+        if (!cancelled) {
+          setIsOnboarded(json.ok ? json.profile !== null : true);
+        }
+      } catch {
+        if (!cancelled) {
+          setIsOnboarded(true);
+        }
+      }
+    }
+
+    checkOnboarding();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [session]);
+
   if (loading) {
     return null;
   }
 
   if (session) {
+    if (isOnboarded === null) {
+      return null;
+    }
+
     return (
-      <>
+      <OnboardedRoute session={session} isOnboarded={isOnboarded} onOnboarded={() => setIsOnboarded(true)}>
         <NavBar view={view} onNavigate={setView} onSignOut={() => supabase.auth.signOut()} />
-        {view === 'home' ? <Home /> : <Profile session={session} />}
-      </>
+        {view === 'home' ? <Home /> : <ProfilePage session={session} />}
+      </OnboardedRoute>
     );
   }
 
