@@ -1,49 +1,85 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { zodOutputFormat } from "@anthropic-ai/sdk/helpers/zod";
 import { z } from "zod";
+import type { Skill } from "../lib/types.js";
 
 // Reads ANTHROPIC_API_KEY from the environment — never hardcode the key.
 const client = new Anthropic();
 
 // The onboarding persona: introduces itself, draws out the user's current
-// skills/experience/goals, and names concrete gaps as it learns enough to.
-const SYSTEM_PROMPT = `You are Scout, SkillHunt's onboarding assistant.
+// skills/experience/goals, runs a short assessment, and — once it has
+// enough to go on — finalizes skills/gaps/topic findings for the profile.
+const SYSTEM_PROMPT = `You are Scout, SkillHunt's onboarding assistant, running a short skills assessment.
 
 In this conversation you:
 1. Introduce yourself briefly on your first turn and explain that you're here to
-   help the user figure out what to learn next.
+   assess the user's current skills and goals so SkillHunt can recommend what to
+   learn next.
 2. Ask about the user's current skills, experience level, and career or learning
    goals — one or two focused questions at a time, not a long form.
-3. As you learn more, identify specific gaps between where the user is now and
-   where they want to be.
-4. Keep your reply warm, concise, and focused on a single next question or step
-   at a time.
+3. Once you have enough information (usually after a few exchanges), set
+   assessmentComplete to true and finalize your findings.
+4. Keep your reply warm and concise, focused on a single next question or step
+   at a time until the assessment is complete.
 
-Alongside your reply, extract any skill gaps or learning suggestions you've
-identified so far into the suggestions field. Each suggestion names a specific
-skill or topic and explains why it's relevant to this user, based only on what
-they've actually told you. If you don't have enough information yet (e.g. the
-conversation just started), return an empty suggestions array — don't invent
-suggestions before you have something to base them on.`;
+On every turn, populate these fields from what's been said so far:
+- skillsIdentified: skills the user already has, as stated or clearly implied.
+  Leave empty until something concrete has come up.
+- gapsFound: specific gaps between what the user has and what their stated
+  goals require. Leave empty until you have enough to ground a gap in what
+  they've actually told you.
+- topicsToAdd: topic or interest names worth adding to the user's profile,
+  based on the gaps you've found. Leave empty until assessmentComplete is true.
+
+Only set assessmentComplete to true once you're confident in these findings —
+don't rush it after a single message.`;
 
 const ChatResponseSchema = z.object({
   reply: z.string().describe("The assistant's conversational reply to the user"),
-  suggestions: z
+  assessmentComplete: z
+    .boolean()
+    .describe("True once enough is known to finalize skillsIdentified, gapsFound, and topicsToAdd"),
+  skillsIdentified: z
     .array(
       z.object({
-        skill: z.string().describe("A specific skill or topic identified as a gap or next step"),
-        reason: z.string().describe("Why this was suggested, grounded in what the user has said"),
+        name: z.string().describe("Skill name"),
+        level: z.string().describe("The user's level at this skill, e.g. beginner/intermediate/advanced"),
       }),
     )
-    .describe("Skill gaps or learning suggestions identified from the conversation so far"),
+    .describe("Skills the user already has, as stated or clearly implied in the conversation"),
+  gapsFound: z
+    .array(
+      z.object({
+        skill: z.string().describe("The skill or topic identified as a gap"),
+        reason: z.string().describe("Why this is a gap, grounded in what the user has said"),
+      }),
+    )
+    .describe("Specific gaps between the user's current skills and their stated goals"),
+  topicsToAdd: z
+    .array(z.string())
+    .describe("Topic or interest names to add to the user's profile, based on the gaps found"),
 });
 
-export type ChatSuggestion = z.infer<typeof ChatResponseSchema>["suggestions"][number];
+export type ChatGap = z.infer<typeof ChatResponseSchema>["gapsFound"][number];
 
 export interface ChatResult {
   reply: string | null;
-  suggestions: ChatSuggestion[] | null;
+  assessmentComplete: boolean | null;
+  skillsIdentified: Skill[] | null;
+  gapsFound: ChatGap[] | null;
+  topicsToAdd: string[] | null;
   error: string | null;
+}
+
+function emptyResult(error: string): ChatResult {
+  return {
+    reply: null,
+    assessmentComplete: null,
+    skillsIdentified: null,
+    gapsFound: null,
+    topicsToAdd: null,
+    error,
+  };
 }
 
 export async function sendChatMessage(messages: Anthropic.MessageParam[]): Promise<ChatResult> {
@@ -60,28 +96,26 @@ export async function sendChatMessage(messages: Anthropic.MessageParam[]): Promi
     });
 
     if (!response.parsed_output) {
-      return { reply: null, suggestions: null, error: "Failed to parse assistant response" };
+      return emptyResult("Failed to parse assistant response");
     }
 
-    return {
-      reply: response.parsed_output.reply,
-      suggestions: response.parsed_output.suggestions,
-      error: null,
-    };
+    const { reply, assessmentComplete, skillsIdentified, gapsFound, topicsToAdd } = response.parsed_output;
+
+    return { reply, assessmentComplete, skillsIdentified, gapsFound, topicsToAdd, error: null };
   } catch (error) {
     if (error instanceof Anthropic.AuthenticationError) {
-      return { reply: null, suggestions: null, error: "Invalid Anthropic API key" };
+      return emptyResult("Invalid Anthropic API key");
     }
 
     if (error instanceof Anthropic.RateLimitError) {
-      return { reply: null, suggestions: null, error: "Rate limited by the Anthropic API, try again shortly" };
+      return emptyResult("Rate limited by the Anthropic API, try again shortly");
     }
 
     if (error instanceof Anthropic.APIError) {
-      return { reply: null, suggestions: null, error: error.message };
+      return emptyResult(error.message);
     }
 
     const fallbackMessage = error instanceof Error ? error.message : "Failed to get chat response";
-    return { reply: null, suggestions: null, error: fallbackMessage };
+    return emptyResult(fallbackMessage);
   }
 }

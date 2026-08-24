@@ -46,3 +46,21 @@ export interface Profile {
   createdAt: string;
   updatedAt: string;
 }
+
+export interface ChatMessage {
+  role: "user" | "assistant";
+  content: string;
+}
+
+export type ConversationStatus = "in_progress" | "completed";
+
+// Maps to the public.conversations table (see supabase/migrations).
+// Chat history for the onboarding assistant, scoped per user.
+export interface Conversation {
+  id: string;
+  userId: string;
+  messages: ChatMessage[];
+  status: ConversationStatus;
+  createdAt: string;
+  updatedAt: string;
+}

@@ -128,6 +128,44 @@ export interface ProfileInput {
   bio?: string | null;
 }
 
+export interface ChatMessage {
+  role: "user" | "assistant";
+  content: string;
+}
+
+export type ConversationStatus = "in_progress" | "completed";
+
+// Maps to the public.conversations table (see supabase/migrations).
+// Chat history for the onboarding assistant, scoped per user.
+export interface Conversation {
+  id: string;
+  userId: string;
+  messages: ChatMessage[];
+  status: ConversationStatus;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ConversationRow {
+  id: string;
+  user_id: string;
+  messages: ChatMessage[];
+  status: ConversationStatus;
+  created_at: string;
+  updated_at: string;
+}
+
+export function toConversation(row: ConversationRow): Conversation {
+  return {
+    id: row.id,
+    userId: row.user_id,
+    messages: row.messages,
+    status: row.status,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  };
+}
+
 function isSkill(value: unknown): value is Skill {
   return (
     typeof value === "object" &&

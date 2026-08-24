@@ -18,12 +18,13 @@ chatRouter.post("/", async (req, res) => {
     return;
   }
 
-  const { reply, suggestions, error } = await sendChatMessage(messages);
+  const { reply, assessmentComplete, skillsIdentified, gapsFound, topicsToAdd, error } =
+    await sendChatMessage(messages);
 
   if (error) {
     res.status(500).json({ ok: false, error });
     return;
   }
 
-  res.json({ ok: true, reply, suggestions });
+  res.json({ ok: true, reply, assessmentComplete, skillsIdentified, gapsFound, topicsToAdd });
 });
