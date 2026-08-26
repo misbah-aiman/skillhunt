@@ -141,7 +141,7 @@ export function ChatWidget({ session, open, onOpenChange, onOpenCall }: ChatWidg
         type="button"
         onClick={() => onOpenChange(true)}
         aria-label="Chat with Alex"
-        className="fixed bottom-20 right-4 z-30 flex h-14 w-14 items-center justify-center rounded-full bg-emerald-600 text-2xl text-white shadow-lg transition-transform hover:scale-105 hover:bg-emerald-700 sm:bottom-6 sm:right-6"
+        className="fixed right-4 bottom-[calc(5rem+env(safe-area-inset-bottom,0px))] z-30 flex h-14 w-14 items-center justify-center rounded-full bg-emerald-600 text-2xl text-white shadow-lg transition-transform hover:scale-105 hover:bg-emerald-700 sm:right-6 sm:bottom-6"
       >
         🤖
       </button>
@@ -149,7 +149,7 @@ export function ChatWidget({ session, open, onOpenChange, onOpenCall }: ChatWidg
   }
 
   return (
-    <div className="animate-fade-up fixed inset-x-4 bottom-20 z-30 flex h-[70vh] max-h-[32rem] flex-col overflow-hidden rounded-2xl border border-stone-200 bg-white shadow-2xl sm:inset-x-auto sm:bottom-6 sm:right-6 sm:w-96">
+    <div className="animate-fade-up fixed inset-x-4 bottom-[calc(5rem+env(safe-area-inset-bottom,0px))] z-30 flex h-[70vh] max-h-[32rem] flex-col overflow-hidden rounded-2xl border border-stone-200 bg-white shadow-2xl sm:inset-x-auto sm:bottom-6 sm:right-6 sm:w-96">
       <div className="flex items-center justify-between gap-2 border-b border-stone-200 px-4 py-3">
         <div className="flex items-center gap-2.5">
           <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-lg">🤖</div>
@@ -164,7 +164,7 @@ export function ChatWidget({ session, open, onOpenChange, onOpenCall }: ChatWidg
             onClick={() => setMode((m) => (m === 'history' ? 'chat' : 'history'))}
             aria-label={mode === 'history' ? 'Back to chat' : 'View chat history'}
             title="Chat history"
-            className={`flex h-8 w-8 items-center justify-center rounded-full transition-colors ${
+            className={`flex h-9 w-9 items-center justify-center rounded-full transition-colors ${
               mode === 'history' ? 'bg-emerald-100 text-emerald-700' : 'text-stone-400 hover:bg-stone-100 hover:text-stone-700'
             }`}
           >
@@ -175,7 +175,7 @@ export function ChatWidget({ session, open, onOpenChange, onOpenCall }: ChatWidg
             onClick={handleCallClick}
             aria-label="Call Alex"
             title="Call Alex"
-            className="flex h-8 w-8 items-center justify-center rounded-full text-stone-400 transition-colors hover:bg-emerald-100 hover:text-emerald-700"
+            className="flex h-9 w-9 items-center justify-center rounded-full text-stone-400 transition-colors hover:bg-emerald-100 hover:text-emerald-700"
           >
             <PhoneIcon className="h-4 w-4" />
           </button>
@@ -184,7 +184,7 @@ export function ChatWidget({ session, open, onOpenChange, onOpenCall }: ChatWidg
             onClick={() => onOpenChange(false)}
             aria-label="Close chat"
             title="Close"
-            className="flex h-8 w-8 items-center justify-center rounded-full text-stone-400 transition-colors hover:bg-stone-100 hover:text-stone-700"
+            className="flex h-9 w-9 items-center justify-center rounded-full text-stone-400 transition-colors hover:bg-stone-100 hover:text-stone-700"
           >
             <CloseIcon className="h-4 w-4" />
           </button>

@@ -87,7 +87,7 @@ function App() {
 
     return (
       <OnboardedRoute session={session} isOnboarded={isOnboarded} onOnboarded={() => setIsOnboarded(true)}>
-        <div className="mx-auto max-w-6xl px-4 pb-24 pt-8 sm:px-8 sm:pb-8">
+        <div className="mx-auto max-w-6xl px-4 pt-8 pb-[calc(9rem+env(safe-area-inset-bottom,0px))] sm:px-8 sm:pb-8">
           <NavBar view={view} onNavigate={setView} onSignOut={() => supabase.auth.signOut()} />
           <div className="animate-fade-up" key={view}>
             {view === 'dashboard' && <DashboardPage session={session} onNavigateToChat={openChat} />}
