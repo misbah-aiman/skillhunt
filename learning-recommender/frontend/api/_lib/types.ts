@@ -166,6 +166,70 @@ export function toConversation(row: ConversationRow): Conversation {
   };
 }
 
+// Maps to the public.learning_paths table (see supabase/migrations). One
+// row per user — regenerating a path overwrites the previous one.
+export interface LearningPath {
+  id: string;
+  userId: string;
+  topicIds: string[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface LearningPathRow {
+  id: string;
+  user_id: string;
+  topic_ids: string[];
+  created_at: string;
+  updated_at: string;
+}
+
+export function toLearningPath(row: LearningPathRow): LearningPath {
+  return {
+    id: row.id,
+    userId: row.user_id,
+    topicIds: row.topic_ids,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  };
+}
+
+export type ProgressStatus = "in_progress" | "completed";
+
+// Maps to the public.progress table (see supabase/migrations). One row
+// per (user, topic) tracking how far the learner has gotten on it.
+export interface Progress {
+  id: string;
+  userId: string;
+  topicId: string;
+  status: ProgressStatus;
+  completedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ProgressRow {
+  id: string;
+  user_id: string;
+  topic_id: string;
+  status: ProgressStatus;
+  completed_at: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export function toProgress(row: ProgressRow): Progress {
+  return {
+    id: row.id,
+    userId: row.user_id,
+    topicId: row.topic_id,
+    status: row.status,
+    completedAt: row.completed_at,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  };
+}
+
 function isSkill(value: unknown): value is Skill {
   return (
     typeof value === "object" &&
