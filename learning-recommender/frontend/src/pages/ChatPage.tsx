@@ -3,7 +3,7 @@ import type { Session } from '@supabase/supabase-js';
 import type { ChatMessage } from '../lib/types';
 import { SuggestionsCard } from '../components/SuggestionsCard';
 import { Spinner } from '../components/Spinner';
-import './ChatPage.css';
+import { chatBubbleClasses, chatBubbleRowClasses, inputClasses, primaryButtonClasses } from '../lib/ui';
 
 interface ChatPageProps {
   session: Session;
@@ -66,19 +66,21 @@ export function ChatPage({ session }: ChatPageProps) {
   }
 
   return (
-    <div className="chat-page">
-      <h1>Chat with Alex</h1>
+    <div className="mx-auto flex w-full max-w-2xl flex-col text-left">
+      <h1 className="mb-4 text-2xl font-semibold text-stone-800">Chat with Alex</h1>
 
-      <div className="chat-log">
-        {messages.length === 0 && <p className="chat-empty">Say hello to start your skills assessment.</p>}
+      <div className="flex max-h-[60vh] flex-col gap-3 overflow-y-auto px-1 py-2">
+        {messages.length === 0 && (
+          <p className="mt-8 text-center text-stone-500">Say hello to start your skills assessment.</p>
+        )}
         {messages.map((message, index) => (
-          <div className={`chat-bubble-row chat-bubble-row-${message.role}`} key={index}>
-            <div className={`chat-bubble chat-bubble-${message.role}`}>{message.content}</div>
+          <div className={chatBubbleRowClasses(message.role)} key={index}>
+            <div className={chatBubbleClasses(message.role)}>{message.content}</div>
           </div>
         ))}
         {sending && (
-          <div className="chat-bubble-row chat-bubble-row-assistant">
-            <div className="chat-bubble chat-bubble-assistant chat-bubble-pending">
+          <div className={chatBubbleRowClasses('assistant')}>
+            <div className={`${chatBubbleClasses('assistant')} flex items-center`}>
               <Spinner size={14} label="Thinking..." />
             </div>
           </div>
@@ -86,17 +88,18 @@ export function ChatPage({ session }: ChatPageProps) {
         <div ref={bottomRef} />
       </div>
 
-      {error && <p className="auth-error chat-error">{error}</p>}
+      {error && <p className="mt-2 text-sm text-rose-600">{error}</p>}
 
-      <form className="chat-input-row" onSubmit={handleSubmit}>
+      <form className="mt-4 flex gap-2" onSubmit={handleSubmit}>
         <input
           type="text"
           placeholder="Type a message..."
           value={input}
           onChange={(e) => setInput(e.target.value)}
           disabled={sending}
+          className={`${inputClasses} flex-1`}
         />
-        <button type="submit" disabled={sending || !input.trim()}>
+        <button type="submit" disabled={sending || !input.trim()} className={primaryButtonClasses}>
           Send
         </button>
       </form>

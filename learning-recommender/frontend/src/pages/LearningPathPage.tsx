@@ -3,8 +3,14 @@ import type { Session } from '@supabase/supabase-js';
 import type { LearningPath, RecommendedTopic } from '../lib/types';
 import { Spinner } from '../components/Spinner';
 import { TopicDetailPage } from './TopicDetailPage';
-import './TopicsPage.css';
-import './LearningPathPage.css';
+import {
+  difficultyBadgeClasses,
+  emptyStateClasses,
+  primaryButtonClasses,
+  secondaryButtonClasses,
+  statusBlockClasses,
+  statusErrorClasses,
+} from '../lib/ui';
 
 interface LearningPathPageProps {
   session: Session;
@@ -110,72 +116,74 @@ export function LearningPathPage({ session, onNavigateToChat }: LearningPathPage
   }
 
   return (
-    <div className="learning-path-page">
-      <div className="learning-path-header">
-        <h1>Your Learning Path</h1>
-        <button type="button" onClick={() => generate(true)} disabled={loading || regenerating}>
+    <div className="mx-auto w-full max-w-3xl text-left">
+      <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
+        <h1 className="text-2xl font-semibold text-stone-800">Your Learning Path</h1>
+        <button type="button" onClick={() => generate(true)} disabled={loading || regenerating} className={secondaryButtonClasses}>
           {regenerating ? 'Regenerating...' : 'Regenerate Path'}
         </button>
       </div>
 
       {justCompletedTitle && (
-        <p className="learning-path-success">✓ "{justCompletedTitle}" marked complete!</p>
+        <p className="animate-fade-up mb-4 rounded-lg bg-emerald-50 px-3.5 py-2.5 text-sm font-medium text-emerald-800">
+          ✓ "{justCompletedTitle}" marked complete!
+        </p>
       )}
 
       {loading && (
-        <div className="status-block">
+        <div className={statusBlockClasses}>
           <Spinner label="Generating your learning path..." />
         </div>
       )}
-      {!loading && error && <p className="status-block status-error">{error}</p>}
+      {!loading && error && <p className={statusErrorClasses}>{error}</p>}
       {!loading && !error && recommendations.length === 0 && (
-        <div className="empty-state">
+        <div className={emptyStateClasses}>
           <p>No recommendations yet — start a chat to get recommendations.</p>
-          <button type="button" onClick={onNavigateToChat}>
-            Chat with Scout
+          <button type="button" onClick={onNavigateToChat} className={primaryButtonClasses}>
+            Chat with Alex
           </button>
         </div>
       )}
 
       {!loading && !error && recommendations.length > 0 && (
-        <ol className="learning-path-list">
+        <ol className="flex flex-col gap-4">
           {recommendations.map((entry, index) => (
             <li
-              className="learning-path-card"
               key={entry.topic.id}
               style={{ animationDelay: `${Math.min(index, 12) * 0.05}s` }}
+              className="animate-fade-up flex flex-col gap-3 rounded-xl border border-stone-200 bg-white p-4 shadow-sm transition-shadow hover:shadow-md sm:flex-row"
             >
-              <div className="learning-path-order">{index + 1}</div>
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-sm font-bold text-emerald-700">
+                {index + 1}
+              </div>
 
-              <div className="learning-path-card-body">
-                <div className="topic-card-header">
-                  <h2>{entry.topic.title}</h2>
-                  <span className={`difficulty-badge difficulty-${entry.topic.difficulty}`}>
-                    {entry.topic.difficulty}
-                  </span>
+              <div className="flex min-w-0 flex-1 flex-col gap-1.5">
+                <div className="flex items-center justify-between gap-2">
+                  <h2 className="text-base font-semibold text-stone-800">{entry.topic.title}</h2>
+                  <span className={difficultyBadgeClasses(entry.topic.difficulty)}>{entry.topic.difficulty}</span>
                 </div>
 
-                {entry.topic.category && <p className="topic-category">{entry.topic.category}</p>}
+                {entry.topic.category && <p className="text-sm text-stone-500">{entry.topic.category}</p>}
 
-                <p className="learning-path-reason">
+                <p className="text-sm text-stone-600">
                   {entry.matchedOn.length > 0
                     ? `Recommended because it matches: ${entry.matchedOn.join(', ')}`
                     : 'Recommended based on your profile'}
                 </p>
 
-                <p className="learning-path-resources">
+                <p className="text-sm text-stone-500">
                   {entry.resourceCount} {entry.resourceCount === 1 ? 'resource' : 'resources'} available
                 </p>
 
-                <div className="learning-path-actions">
-                  <button type="button" onClick={() => setSelectedTopicId(entry.topic.id)}>
+                <div className="mt-1 flex flex-wrap gap-2">
+                  <button type="button" onClick={() => setSelectedTopicId(entry.topic.id)} className={primaryButtonClasses}>
                     Start Learning
                   </button>
                   <button
                     type="button"
-                    className="mark-complete-button"
                     onClick={() => handleComplete(entry.topic.id, entry.topic.title)}
                     disabled={completingId === entry.topic.id}
+                    className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg border border-emerald-300 bg-white px-4 py-2 text-sm font-semibold text-emerald-700 transition-colors hover:bg-emerald-50 disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     {completingId === entry.topic.id ? '✓ Marking...' : '✓ Mark as Complete'}
                   </button>
@@ -187,7 +195,7 @@ export function LearningPathPage({ session, onNavigateToChat }: LearningPathPage
       )}
 
       {learningPath && !loading && (
-        <p className="learning-path-updated">
+        <p className="mt-6 text-center text-sm text-stone-500">
           Last generated {new Date(learningPath.updatedAt).toLocaleString()}
         </p>
       )}

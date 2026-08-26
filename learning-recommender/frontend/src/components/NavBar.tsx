@@ -1,5 +1,3 @@
-import './NavBar.css';
-
 export type View = 'dashboard' | 'path' | 'topics' | 'persona' | 'chat' | 'call' | 'profile';
 
 interface NavBarProps {
@@ -27,32 +25,46 @@ function isLinkActive(view: View, linkView: View): boolean {
 export function NavBar({ view, onNavigate, onSignOut }: NavBarProps) {
   return (
     <>
-      <nav className="navbar">
-        <span className="navbar-brand">SkillHunt</span>
-        <div className="navbar-links">
+      <nav className="mb-8 flex w-full items-center justify-between gap-4 border-b border-stone-200 pb-6">
+        <span className="font-display text-lg font-semibold text-stone-800">SkillHunt</span>
+        <div className="hidden gap-1 sm:flex">
           {LINKS.map((link) => (
             <button
               type="button"
               key={link.view}
-              className={`navbar-link${isLinkActive(view, link.view) ? ' active' : ''}`}
               onClick={() => onNavigate(link.view)}
+              className={`rounded-lg px-3.5 py-1.5 text-sm font-medium transition-colors ${
+                isLinkActive(view, link.view)
+                  ? 'bg-emerald-100 text-emerald-800'
+                  : 'text-stone-500 hover:bg-stone-100 hover:text-stone-800'
+              }`}
             >
               {link.label}
             </button>
           ))}
         </div>
-        <button type="button" className="link-button" onClick={onSignOut}>
+        <button
+          type="button"
+          onClick={onSignOut}
+          className="text-sm font-medium text-emerald-700 hover:text-emerald-800"
+        >
           Sign Out
         </button>
       </nav>
 
-      <nav className="bottom-nav" aria-label="Primary">
+      <nav
+        aria-label="Primary"
+        className="fixed inset-x-0 bottom-0 z-20 flex border-t border-stone-200 bg-white shadow-[0_-4px_16px_rgba(0,0,0,0.06)] sm:hidden"
+        style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
+      >
         {LINKS.map((link) => (
           <button
             type="button"
             key={link.view}
-            className={`bottom-nav-link${isLinkActive(view, link.view) ? ' active' : ''}`}
             onClick={() => onNavigate(link.view)}
+            className={`flex min-h-11 flex-1 items-center justify-center px-1 py-2 text-xs font-medium transition-colors ${
+              isLinkActive(view, link.view) ? 'text-emerald-700' : 'text-stone-400'
+            }`}
           >
             {link.label}
           </button>

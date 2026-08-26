@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import type { Session } from '@supabase/supabase-js';
 import { Spinner } from './Spinner';
-import './SuggestionsCard.css';
+import { Tag } from './Tag';
+import { cardClasses, inputClasses, primaryButtonClasses, secondaryButtonClasses } from '../lib/ui';
 
 interface SuggestionsCardProps {
   session: Session;
@@ -79,19 +80,21 @@ export function SuggestionsCard({ session, skills: initialSkills, gaps, topics: 
 
   if (applied) {
     return (
-      <div className="suggestions-card">
-        <p className="auth-message">Added to your profile.</p>
+      <div className={`${cardClasses} mt-6 animate-fade-up border-emerald-200 bg-emerald-50`}>
+        <p className="text-sm font-medium text-emerald-800">Added to your profile.</p>
       </div>
     );
   }
 
   return (
-    <div className="suggestions-card">
-      <h2>Based on our chat, here's what Alex suggests adding to your profile:</h2>
+    <div className={`${cardClasses} mt-6 flex animate-fade-up flex-col gap-4 border-emerald-200 bg-emerald-50/40`}>
+      <h2 className="font-display text-lg text-stone-800">
+        Based on our chat, here's what Alex suggests adding to your profile:
+      </h2>
 
-      <section>
-        <h3>Skills</h3>
-        <div className="tag-input">
+      <section className="flex flex-col gap-2">
+        <h3 className="text-sm font-semibold uppercase tracking-wide text-stone-500">Skills</h3>
+        <div className="flex flex-wrap gap-2">
           <input
             type="text"
             placeholder="Add a skill"
@@ -103,30 +106,28 @@ export function SuggestionsCard({ session, skills: initialSkills, gaps, topics: 
                 addSkill();
               }
             }}
+            className={`${inputClasses} min-w-36 flex-1`}
           />
-          <button type="button" onClick={addSkill}>
+          <button type="button" onClick={addSkill} className={secondaryButtonClasses}>
             Add
           </button>
         </div>
         {skills.length === 0 ? (
-          <p className="profile-empty">No skills selected.</p>
+          <p className="text-sm text-stone-500">No skills selected.</p>
         ) : (
-          <div className="tag-list">
+          <div className="flex flex-wrap gap-2">
             {skills.map((skill) => (
-              <span className="tag" key={skill}>
+              <Tag key={skill} label={skill} onRemove={() => removeSkill(skill)}>
                 {skill}
-                <button type="button" onClick={() => removeSkill(skill)} aria-label={`Remove ${skill}`}>
-                  &times;
-                </button>
-              </span>
+              </Tag>
             ))}
           </div>
         )}
       </section>
 
-      <section>
-        <h3>Topics</h3>
-        <div className="tag-input">
+      <section className="flex flex-col gap-2">
+        <h3 className="text-sm font-semibold uppercase tracking-wide text-stone-500">Topics</h3>
+        <div className="flex flex-wrap gap-2">
           <input
             type="text"
             placeholder="Add a topic"
@@ -138,41 +139,46 @@ export function SuggestionsCard({ session, skills: initialSkills, gaps, topics: 
                 addTopic();
               }
             }}
+            className={`${inputClasses} min-w-36 flex-1`}
           />
-          <button type="button" onClick={addTopic}>
+          <button type="button" onClick={addTopic} className={secondaryButtonClasses}>
             Add
           </button>
         </div>
         {topics.length === 0 ? (
-          <p className="profile-empty">No topics selected.</p>
+          <p className="text-sm text-stone-500">No topics selected.</p>
         ) : (
-          <div className="tag-list">
+          <div className="flex flex-wrap gap-2">
             {topics.map((topic) => (
-              <span className="tag" key={topic}>
+              <Tag key={topic} label={topic} onRemove={() => removeTopic(topic)}>
                 {topic}
-                <button type="button" onClick={() => removeTopic(topic)} aria-label={`Remove ${topic}`}>
-                  &times;
-                </button>
-              </span>
+              </Tag>
             ))}
           </div>
         )}
       </section>
 
       {gaps.length > 0 && (
-        <section>
-          <h3>Gaps identified</h3>
-          <ul className="gap-list">
+        <section className="flex flex-col gap-2">
+          <h3 className="text-sm font-semibold uppercase tracking-wide text-stone-500">Gaps identified</h3>
+          <ul className="flex flex-col gap-1 pl-5 text-sm text-stone-600">
             {gaps.map((gap, index) => (
-              <li key={index}>{gap}</li>
+              <li key={index} className="list-disc">
+                {gap}
+              </li>
             ))}
           </ul>
         </section>
       )}
 
-      {error && <p className="auth-error">{error}</p>}
+      {error && <p className="text-sm text-rose-600">{error}</p>}
 
-      <button type="button" onClick={handleApply} disabled={applying || !hasAnything}>
+      <button
+        type="button"
+        onClick={handleApply}
+        disabled={applying || !hasAnything}
+        className={`${primaryButtonClasses} self-start`}
+      >
         {applying ? <Spinner size={14} label="Adding..." /> : 'Confirm & Add to Profile'}
       </button>
     </div>

@@ -2,8 +2,7 @@ import { useState, type FormEvent } from 'react';
 import type { Session } from '@supabase/supabase-js';
 import type { Skill } from '../lib/types';
 import { ProfileFields } from '../components/ProfileFields';
-import './ProfilePage.css';
-import './ProfileSetup.css';
+import { primaryButtonClasses } from '../lib/ui';
 
 interface ProfileSetupProps {
   session: Session;
@@ -24,32 +23,36 @@ export function ProfileSetup({ session, onComplete }: ProfileSetupProps) {
     setSaving(true);
     setError(null);
 
-    const res = await fetch('/api/profile', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${session.access_token}`,
-      },
-      body: JSON.stringify({ skills, interests, goals, bio: bio.trim() || null }),
-    });
-    const json = await res.json();
+    try {
+      const res = await fetch('/api/profile', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({ skills, interests, goals, bio: bio.trim() || null }),
+      });
+      const json = await res.json();
 
-    if (!json.ok) {
-      setError(json.error ?? 'Failed to save profile.');
+      if (!json.ok) {
+        setError(json.error ?? 'Failed to save profile.');
+        return;
+      }
+
+      onComplete();
+    } catch (err) {
+      const detail = err instanceof Error ? err.message : String(err);
+      setError(`Failed to reach the server: ${detail}`);
+    } finally {
       setSaving(false);
-      return;
     }
-
-    onComplete();
   }
 
   return (
-    <div className="profile-setup">
-      <form className="profile-form" onSubmit={handleSubmit}>
-        <h1>Welcome to SkillHunt</h1>
-        <p className="profile-setup-intro">
-          Let's set up your profile so we can find the skills that find you the job.
-        </p>
+    <div className="flex w-full justify-center">
+      <form className="mx-auto flex w-full max-w-lg flex-col gap-6 text-left" onSubmit={handleSubmit}>
+        <h1 className="text-2xl font-semibold text-stone-800">Welcome to SkillHunt</h1>
+        <p className="-mt-4 text-stone-500">Let's set up your profile so we can find the skills that find you the job.</p>
 
         <ProfileFields
           skills={skills}
@@ -62,9 +65,9 @@ export function ProfileSetup({ session, onComplete }: ProfileSetupProps) {
           onBioChange={setBio}
         />
 
-        {error && <p className="auth-error">{error}</p>}
+        {error && <p className="text-sm text-rose-600">{error}</p>}
 
-        <button type="submit" disabled={saving}>
+        <button type="submit" disabled={saving} className={`${primaryButtonClasses} self-start`}>
           {saving ? 'Saving...' : 'Finish Setup'}
         </button>
       </form>

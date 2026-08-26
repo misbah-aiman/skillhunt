@@ -3,8 +3,15 @@ import type { Session } from '@supabase/supabase-js';
 import type { Progress, RecommendedTopic } from '../lib/types';
 import { Spinner } from '../components/Spinner';
 import { TopicDetailPage } from './TopicDetailPage';
-import './TopicsPage.css';
-import './DashboardPage.css';
+import {
+  cardClasses,
+  difficultyBadgeClasses,
+  emptyStateClasses,
+  primaryButtonClasses,
+  secondaryButtonClasses,
+  statusBlockClasses,
+  statusErrorClasses,
+} from '../lib/ui';
 
 interface DashboardPageProps {
   session: Session;
@@ -75,60 +82,62 @@ export function DashboardPage({ session, onNavigateToChat }: DashboardPageProps)
   const nextTopic = recommendations[0] ?? null;
 
   return (
-    <div className="dashboard-page">
-      <h1>Dashboard</h1>
+    <div className="mx-auto w-full max-w-3xl text-left">
+      <h1 className="mb-6 text-2xl font-semibold text-stone-800">Dashboard</h1>
 
       {loading && (
-        <div className="status-block">
+        <div className={statusBlockClasses}>
           <Spinner label="Loading your dashboard..." />
         </div>
       )}
-      {!loading && error && <p className="status-block status-error">{error}</p>}
+      {!loading && error && <p className={statusErrorClasses}>{error}</p>}
 
       {!loading && !error && (
         <>
-          <div className="dashboard-stats">
-            <div className="dashboard-stat-card">
-              <span className="dashboard-stat-value">{completedCount}</span>
-              <span className="dashboard-stat-label">Topics Completed</span>
+          <div className="mb-8 grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-4">
+            <div className={`${cardClasses} animate-fade-up flex flex-col gap-2`}>
+              <span className="text-4xl font-bold text-stone-800">{completedCount}</span>
+              <span className="text-sm text-stone-500">Topics Completed</span>
             </div>
 
-            <div className="dashboard-stat-card dashboard-progress-card">
-              <div className="dashboard-progress-bar">
-                <div className="dashboard-progress-fill" style={{ width: `${percent}%` }} />
+            <div className={`${cardClasses} animate-fade-up flex flex-col justify-center gap-2`} style={{ animationDelay: '0.05s' }}>
+              <div className="h-2.5 w-full overflow-hidden rounded-full bg-stone-200">
+                <div className="h-full rounded-full bg-emerald-600 transition-[width]" style={{ width: `${percent}%` }} />
               </div>
-              <span className="dashboard-stat-label">{percent}% of your learning path complete</span>
+              <span className="text-sm text-stone-500">{percent}% of your learning path complete</span>
             </div>
           </div>
 
-          <section className="dashboard-section">
-            <h2>Next Up</h2>
+          <section className="animate-fade-up mb-8" style={{ animationDelay: '0.1s' }}>
+            <h2 className="mb-3 text-lg font-semibold text-stone-800">Next Up</h2>
             {nextTopic ? (
-              <div className="topic-card dashboard-next-topic">
-                <div className="topic-card-header">
-                  <h3>{nextTopic.topic.title}</h3>
-                  <span className={`difficulty-badge difficulty-${nextTopic.topic.difficulty}`}>
-                    {nextTopic.topic.difficulty}
-                  </span>
+              <div className={`${cardClasses} flex flex-col gap-2`}>
+                <div className="flex items-center justify-between gap-2">
+                  <h3 className="text-base font-semibold text-stone-800">{nextTopic.topic.title}</h3>
+                  <span className={difficultyBadgeClasses(nextTopic.topic.difficulty)}>{nextTopic.topic.difficulty}</span>
                 </div>
-                {nextTopic.topic.category && <p className="topic-category">{nextTopic.topic.category}</p>}
-                {nextTopic.topic.description && <p className="topic-description">{nextTopic.topic.description}</p>}
-                <button type="button" onClick={() => setSelectedTopicId(nextTopic.topic.id)}>
+                {nextTopic.topic.category && <p className="text-sm text-stone-500">{nextTopic.topic.category}</p>}
+                {nextTopic.topic.description && <p className="text-sm text-stone-600">{nextTopic.topic.description}</p>}
+                <button
+                  type="button"
+                  onClick={() => setSelectedTopicId(nextTopic.topic.id)}
+                  className={`${primaryButtonClasses} mt-1 self-start`}
+                >
                   Start Learning
                 </button>
               </div>
             ) : (
-              <div className="empty-state">
+              <div className={emptyStateClasses}>
                 <p>No recommendations yet — start a chat to get recommendations.</p>
-                <button type="button" onClick={onNavigateToChat}>
-                  Chat with Scout
+                <button type="button" onClick={onNavigateToChat} className={primaryButtonClasses}>
+                  Chat with Alex
                 </button>
               </div>
             )}
           </section>
 
-          <button type="button" className="dashboard-chat-link" onClick={onNavigateToChat}>
-            Chat with Scout again
+          <button type="button" className={`${secondaryButtonClasses} w-full`} onClick={onNavigateToChat}>
+            Chat with Alex again
           </button>
         </>
       )}

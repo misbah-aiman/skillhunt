@@ -1,8 +1,7 @@
 import { useEffect, useState } from 'react';
 import type { Resource, Topic } from '../lib/types';
 import { Spinner } from '../components/Spinner';
-import './TopicsPage.css';
-import './TopicDetailPage.css';
+import { difficultyBadgeClasses, emptyStateClasses, plainTagClasses, statusBlockClasses, statusErrorClasses } from '../lib/ui';
 
 interface TopicDetailPageProps {
   topicId: string;
@@ -28,20 +27,26 @@ export function TopicDetailPage({ topicId, onBack }: TopicDetailPageProps) {
       setLoading(true);
       setError(null);
 
-      const res = await fetch(`/api/topics/${topicId}`);
-      const json = await res.json();
+      try {
+        const res = await fetch(`/api/topics/${topicId}`);
+        const json = await res.json();
 
-      if (cancelled) return;
+        if (cancelled) return;
 
-      if (!json.ok) {
-        setError(json.error ?? 'Failed to load topic.');
-        setLoading(false);
-        return;
+        if (!json.ok) {
+          setError(json.error ?? 'Failed to load topic.');
+          return;
+        }
+
+        setTopic(json.topic);
+        setResources(json.resources ?? []);
+      } catch (err) {
+        if (cancelled) return;
+        const detail = err instanceof Error ? err.message : String(err);
+        setError(`Failed to reach the server: ${detail}`);
+      } finally {
+        if (!cancelled) setLoading(false);
       }
-
-      setTopic(json.topic);
-      setResources(json.resources ?? []);
-      setLoading(false);
     }
 
     load();
@@ -52,32 +57,32 @@ export function TopicDetailPage({ topicId, onBack }: TopicDetailPageProps) {
   }, [topicId]);
 
   return (
-    <div className="topic-detail">
-      <button type="button" className="link-button" onClick={onBack}>
+    <div className="mx-auto flex w-full max-w-2xl animate-fade-up flex-col gap-4 text-left">
+      <button type="button" onClick={onBack} className="self-start text-sm font-medium text-emerald-700 hover:text-emerald-800">
         ← Back to Topics
       </button>
 
       {loading && (
-        <div className="status-block">
+        <div className={statusBlockClasses}>
           <Spinner label="Loading topic..." />
         </div>
       )}
-      {!loading && error && <p className="status-block status-error">{error}</p>}
+      {!loading && error && <p className={statusErrorClasses}>{error}</p>}
 
       {!loading && !error && topic && (
         <>
-          <div className="topic-detail-header">
-            <h1>{topic.title}</h1>
-            <span className={`difficulty-badge difficulty-${topic.difficulty}`}>{topic.difficulty}</span>
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <h1 className="text-2xl font-semibold text-stone-800">{topic.title}</h1>
+            <span className={difficultyBadgeClasses(topic.difficulty)}>{topic.difficulty}</span>
           </div>
 
-          {topic.category && <p className="topic-category">{topic.category}</p>}
-          {topic.description && <p className="topic-detail-description">{topic.description}</p>}
+          {topic.category && <p className="text-sm text-stone-500">{topic.category}</p>}
+          {topic.description && <p className="text-stone-700">{topic.description}</p>}
 
           {topic.tags.length > 0 && (
-            <div className="topic-tags">
+            <div className="flex flex-wrap gap-1.5">
               {topic.tags.map((tag) => (
-                <span className="tag" key={tag}>
+                <span key={tag} className={plainTagClasses}>
                   {tag}
                 </span>
               ))}
@@ -86,8 +91,8 @@ export function TopicDetailPage({ topicId, onBack }: TopicDetailPageProps) {
 
           {topic.prerequisites.length > 0 && (
             <section>
-              <h2>Prerequisites</h2>
-              <ul className="topic-prerequisites">
+              <h2 className="mb-2 text-lg font-semibold text-stone-800">Prerequisites</h2>
+              <ul className="list-disc pl-5 text-stone-600">
                 {topic.prerequisites.map((prereq) => (
                   <li key={prereq}>{prereq}</li>
                 ))}
@@ -96,19 +101,22 @@ export function TopicDetailPage({ topicId, onBack }: TopicDetailPageProps) {
           )}
 
           <section>
-            <h2>Resources</h2>
+            <h2 className="mb-2 text-lg font-semibold text-stone-800">Resources</h2>
             {resources.length === 0 ? (
-              <div className="empty-state">
+              <div className={emptyStateClasses}>
                 <p>No resources yet for this topic.</p>
               </div>
             ) : (
-              <ul className="resource-list">
+              <ul className="flex flex-col gap-2">
                 {resources.map((resource) => (
-                  <li className="resource-item" key={resource.id}>
-                    <a href={resource.url} target="_blank" rel="noreferrer">
+                  <li
+                    key={resource.id}
+                    className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-stone-200 px-3 py-2.5 transition-colors hover:border-emerald-300"
+                  >
+                    <a href={resource.url} target="_blank" rel="noreferrer" className="font-medium text-emerald-700 hover:text-emerald-800">
                       {resource.title}
                     </a>
-                    <span className="resource-meta">
+                    <span className="whitespace-nowrap text-sm text-stone-500">
                       {RESOURCE_TYPE_LABEL[resource.type]}
                       {resource.provider ? ` · ${resource.provider}` : ''}
                     </span>

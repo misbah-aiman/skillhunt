@@ -12,7 +12,6 @@ import { DashboardPage } from './pages/DashboardPage';
 import { NavBar, type View } from './components/NavBar';
 import { OnboardedRoute } from './components/OnboardedRoute';
 import { Spinner } from './components/Spinner';
-import './App.css';
 
 function App() {
   const [session, setSession] = useState<Session | null>(null);
@@ -69,7 +68,7 @@ function App() {
 
   if (loading) {
     return (
-      <div className="auth-container">
+      <div className="flex min-h-screen items-center justify-center p-4">
         <Spinner size={28} label="Loading SkillHunt..." />
       </div>
     );
@@ -78,7 +77,7 @@ function App() {
   if (session) {
     if (isOnboarded === null) {
       return (
-        <div className="auth-container">
+        <div className="flex min-h-screen items-center justify-center p-4">
           <Spinner size={28} label="Loading your profile..." />
         </div>
       );
@@ -90,22 +89,24 @@ function App() {
 
     return (
       <OnboardedRoute session={session} isOnboarded={isOnboarded} onOnboarded={() => setIsOnboarded(true)}>
-        <NavBar view={view} onNavigate={setView} onSignOut={() => supabase.auth.signOut()} />
-        <div className="app-page" key={view}>
-          {view === 'dashboard' && <DashboardPage session={session} onNavigateToChat={goToChat} />}
-          {view === 'topics' && <TopicsPage />}
-          {view === 'persona' && <PersonaPage onNavigateToChat={goToChat} onNavigateToCall={goToCall} />}
-          {view === 'chat' && <ChatPage session={session} />}
-          {view === 'call' && <CallPage session={session} onEndCall={goToPersona} />}
-          {view === 'path' && <LearningPathPage session={session} onNavigateToChat={goToChat} />}
-          {view === 'profile' && <ProfilePage session={session} />}
+        <div className="mx-auto max-w-6xl px-4 pb-24 pt-8 sm:px-8 sm:pb-8">
+          <NavBar view={view} onNavigate={setView} onSignOut={() => supabase.auth.signOut()} />
+          <div className="animate-fade-up" key={view}>
+            {view === 'dashboard' && <DashboardPage session={session} onNavigateToChat={goToChat} />}
+            {view === 'topics' && <TopicsPage />}
+            {view === 'persona' && <PersonaPage onNavigateToChat={goToChat} onNavigateToCall={goToCall} />}
+            {view === 'chat' && <ChatPage session={session} />}
+            {view === 'call' && <CallPage session={session} onEndCall={goToPersona} />}
+            {view === 'path' && <LearningPathPage session={session} onNavigateToChat={goToChat} />}
+            {view === 'profile' && <ProfilePage session={session} />}
+          </div>
         </div>
       </OnboardedRoute>
     );
   }
 
   return (
-    <div className="auth-container">
+    <div className="flex min-h-screen items-center justify-center p-4">
       <Login />
     </div>
   );

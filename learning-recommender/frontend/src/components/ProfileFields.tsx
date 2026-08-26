@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import type { Skill } from '../lib/types';
-import './ProfileFields.css';
+import { inputClasses, secondaryButtonClasses } from '../lib/ui';
+import { Tag } from './Tag';
 
 interface ProfileFieldsProps {
   skills: Skill[];
@@ -70,9 +71,9 @@ export function ProfileFields({
 
   return (
     <>
-      <section>
-        <h2>Skills</h2>
-        <div className="tag-input">
+      <section className="flex flex-col gap-2">
+        <h2 className="font-display text-lg text-stone-800">Skills</h2>
+        <div className="flex flex-wrap gap-2">
           <input
             type="text"
             placeholder="Skill name"
@@ -84,6 +85,7 @@ export function ProfileFields({
                 addSkill();
               }
             }}
+            className={`${inputClasses} min-w-36 flex-1`}
           />
           <input
             type="text"
@@ -96,27 +98,25 @@ export function ProfileFields({
                 addSkill();
               }
             }}
+            className={`${inputClasses} min-w-36 flex-1`}
           />
-          <button type="button" onClick={addSkill}>
+          <button type="button" onClick={addSkill} className={secondaryButtonClasses}>
             Add
           </button>
         </div>
-        {skills.length === 0 && <p className="profile-empty">No skills added yet.</p>}
-        <div className="tag-list">
+        {skills.length === 0 && <p className="text-sm text-stone-500">No skills added yet.</p>}
+        <div className="flex flex-wrap gap-2">
           {skills.map((skill, index) => (
-            <span className="tag" key={`${skill.name}-${skill.level}-${index}`}>
-              {skill.name} · {skill.level}
-              <button type="button" onClick={() => removeSkill(index)} aria-label={`Remove ${skill.name}`}>
-                &times;
-              </button>
-            </span>
+            <Tag key={`${skill.name}-${skill.level}-${index}`} label={skill.name} onRemove={() => removeSkill(index)}>
+              {`${skill.name} · ${skill.level}`}
+            </Tag>
           ))}
         </div>
       </section>
 
-      <section>
-        <h2>Interests</h2>
-        <div className="tag-input">
+      <section className="flex flex-col gap-2">
+        <h2 className="font-display text-lg text-stone-800">Interests</h2>
+        <div className="flex flex-wrap gap-2">
           <input
             type="text"
             placeholder="Add an interest"
@@ -128,26 +128,24 @@ export function ProfileFields({
                 addInterest();
               }
             }}
+            className={`${inputClasses} min-w-36 flex-1`}
           />
-          <button type="button" onClick={addInterest}>
+          <button type="button" onClick={addInterest} className={secondaryButtonClasses}>
             Add
           </button>
         </div>
-        <div className="tag-list">
+        <div className="flex flex-wrap gap-2">
           {interests.map((interest) => (
-            <span className="tag" key={interest}>
+            <Tag key={interest} label={interest} onRemove={() => removeInterest(interest)}>
               {interest}
-              <button type="button" onClick={() => removeInterest(interest)} aria-label={`Remove ${interest}`}>
-                &times;
-              </button>
-            </span>
+            </Tag>
           ))}
         </div>
       </section>
 
-      <section>
-        <h2>Goals</h2>
-        <div className="tag-input">
+      <section className="flex flex-col gap-2">
+        <h2 className="font-display text-lg text-stone-800">Goals</h2>
+        <div className="flex flex-wrap gap-2">
           <input
             type="text"
             placeholder="Add a goal"
@@ -159,30 +157,29 @@ export function ProfileFields({
                 addGoal();
               }
             }}
+            className={`${inputClasses} min-w-36 flex-1`}
           />
-          <button type="button" onClick={addGoal}>
+          <button type="button" onClick={addGoal} className={secondaryButtonClasses}>
             Add
           </button>
         </div>
-        <div className="tag-list">
+        <div className="flex flex-wrap gap-2">
           {goals.map((goal) => (
-            <span className="tag" key={goal}>
+            <Tag key={goal} label={goal} onRemove={() => removeGoal(goal)}>
               {goal}
-              <button type="button" onClick={() => removeGoal(goal)} aria-label={`Remove ${goal}`}>
-                &times;
-              </button>
-            </span>
+            </Tag>
           ))}
         </div>
       </section>
 
-      <section>
-        <h2>Bio</h2>
+      <section className="flex flex-col gap-2">
+        <h2 className="font-display text-lg text-stone-800">Bio</h2>
         <textarea
           rows={4}
           placeholder="Tell us about yourself"
           value={bio}
           onChange={(e) => onBioChange(e.target.value)}
+          className={`${inputClasses} resize-y`}
         />
       </section>
     </>

@@ -1,11 +1,11 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import type { Session } from '@supabase/supabase-js';
 import type { ChatMessage } from '../lib/types';
 import { useSpeechRecognition } from '../hooks/useSpeechRecognition';
 import { useSpeechSynthesis } from '../hooks/useSpeechSynthesis';
 import { SuggestionsCard } from '../components/SuggestionsCard';
 import { Spinner } from '../components/Spinner';
-import './CallPage.css';
+import { chatBubbleClasses, chatBubbleRowClasses, statusErrorClasses } from '../lib/ui';
 
 interface CallPageProps {
   session: Session;
@@ -119,11 +119,15 @@ export function CallPage({ session, onEndCall }: CallPageProps) {
   const micDisabled = !isSupported || sending || isSpeaking || !callActive;
 
   return (
-    <div className="call-page">
-      <div className="call-avatar-wrap">
-        <div className={`call-avatar${isSpeaking ? ' call-avatar-speaking' : ''}`}>🤖</div>
-        <p className="call-timer">{formatDuration(elapsedSeconds)}</p>
-        <p className="call-status">
+    <div className="mx-auto flex w-full max-w-xl flex-col items-center gap-5 text-center">
+      <div className="flex flex-col items-center gap-1.5">
+        <div
+          className={`flex h-24 w-24 items-center justify-center rounded-full border-2 border-emerald-200 bg-emerald-50 text-4xl transition-shadow ${isSpeaking ? 'animate-pulse-ring border-emerald-400' : ''}`}
+        >
+          🤖
+        </div>
+        <p className="font-mono text-xl font-bold tabular-nums text-stone-800">{formatDuration(elapsedSeconds)}</p>
+        <p className="text-sm text-stone-500">
           {!callActive
             ? isComplete
               ? 'Assessment complete'
@@ -139,28 +143,28 @@ export function CallPage({ session, onEndCall }: CallPageProps) {
       </div>
 
       {!isSupported && (
-        <p className="status-block status-error call-unsupported-warning">
+        <p className={`${statusErrorClasses} w-full rounded-xl bg-rose-50 py-4`}>
           {recognitionError ?? 'Voice input is not supported in this browser.'}
         </p>
       )}
 
-      <div className="call-transcript">
+      <div className="flex max-h-[45vh] w-full flex-col gap-3 overflow-y-auto px-1 py-2 text-left">
         {messages.length === 0 && (
-          <p className="chat-empty">Press the mic and say hello to start your voice assessment.</p>
+          <p className="mt-8 text-center text-stone-500">Press the mic and say hello to start your voice assessment.</p>
         )}
         {messages.map((message, index) => (
-          <div className={`chat-bubble-row chat-bubble-row-${message.role}`} key={index}>
-            <div className={`chat-bubble chat-bubble-${message.role}`}>{message.content}</div>
+          <div className={chatBubbleRowClasses(message.role)} key={index}>
+            <div className={chatBubbleClasses(message.role)}>{message.content}</div>
           </div>
         ))}
         {isListening && transcript && (
-          <div className="chat-bubble-row chat-bubble-row-user">
-            <div className="chat-bubble chat-bubble-user chat-bubble-pending">{transcript}</div>
+          <div className={chatBubbleRowClasses('user')}>
+            <div className={`${chatBubbleClasses('user')} opacity-70`}>{transcript}</div>
           </div>
         )}
         {sending && (
-          <div className="chat-bubble-row chat-bubble-row-assistant">
-            <div className="chat-bubble chat-bubble-assistant chat-bubble-pending">
+          <div className={chatBubbleRowClasses('assistant')}>
+            <div className={`${chatBubbleClasses('assistant')} flex items-center`}>
               <Spinner size={14} label="Thinking..." />
             </div>
           </div>
@@ -168,19 +172,26 @@ export function CallPage({ session, onEndCall }: CallPageProps) {
         <div ref={transcriptEndRef} />
       </div>
 
-      {(error || recognitionError) && isSupported && <p className="auth-error chat-error">{error ?? recognitionError}</p>}
+      {(error || recognitionError) && isSupported && <p className="text-sm text-rose-600">{error ?? recognitionError}</p>}
 
-      <div className="call-controls">
+      <div className="flex items-center gap-4">
         <button
           type="button"
-          className={`call-mic-button${isListening ? ' call-mic-button-active' : ''}`}
           onClick={handleMicClick}
           disabled={micDisabled}
           aria-label={isListening ? 'Stop talking' : 'Start talking'}
+          className={`flex h-16 w-16 items-center justify-center rounded-full text-2xl text-white transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${
+            isListening ? 'animate-pulse-ring bg-rose-600' : 'bg-emerald-600 hover:bg-emerald-700'
+          }`}
+          style={isListening ? ({ '--pulse-ring-color': 'rgb(225 29 72 / 0.2)' } as CSSProperties) : undefined}
         >
           🎤
         </button>
-        <button type="button" className="call-end-button" onClick={handleEndCall}>
+        <button
+          type="button"
+          onClick={handleEndCall}
+          className="inline-flex min-h-11 items-center justify-center rounded-lg border border-rose-300 bg-white px-4 py-2 text-sm font-semibold text-rose-600 transition-colors hover:bg-rose-50"
+        >
           End Call
         </button>
       </div>

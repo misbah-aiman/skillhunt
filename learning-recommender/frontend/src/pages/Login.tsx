@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from 'react';
 import { supabase } from '../lib/supabaseClient';
+import { inputClasses, labelClasses, primaryButtonClasses } from '../lib/ui';
 
 type Step = 'email' | 'otp';
 
@@ -66,11 +67,16 @@ export function Login() {
 
   if (step === 'otp') {
     return (
-      <form className="auth-form" onSubmit={handleVerifyOtp}>
-        <h1>Enter Your Code</h1>
-        <p className="auth-message">We emailed a login code to {email}.</p>
+      <form
+        className="flex w-full max-w-sm flex-col gap-3 rounded-xl border border-stone-200 bg-white p-8 text-left shadow-sm"
+        onSubmit={handleVerifyOtp}
+      >
+        <h1 className="text-2xl font-semibold text-stone-800">Enter Your Code</h1>
+        <p className="text-sm text-emerald-700">We emailed a login code to {email}.</p>
 
-        <label htmlFor="otp-code">Login Code</label>
+        <label htmlFor="otp-code" className={`${labelClasses} mt-2`}>
+          Login Code
+        </label>
         <input
           id="otp-code"
           type="text"
@@ -79,16 +85,21 @@ export function Login() {
           required
           value={otp}
           onChange={(e) => setOtp(e.target.value)}
+          className={inputClasses}
         />
 
-        {error && <p className="auth-error">{error}</p>}
+        {error && <p className="text-sm text-rose-600">{error}</p>}
 
-        <button type="submit" disabled={loading}>
+        <button type="submit" disabled={loading} className={`${primaryButtonClasses} mt-2`}>
           {loading ? 'Verifying...' : 'Verify & Sign In'}
         </button>
 
-        <p className="auth-switch">
-          <button type="button" className="link-button" onClick={() => setStep('email')}>
+        <p className="text-center text-sm">
+          <button
+            type="button"
+            className="font-medium text-emerald-700 hover:text-emerald-800"
+            onClick={() => setStep('email')}
+          >
             Use a different email
           </button>
         </p>
@@ -97,11 +108,16 @@ export function Login() {
   }
 
   return (
-    <form className="auth-form" onSubmit={handleSendOtp}>
-      <h1>Sign In</h1>
-      <p className="auth-message">Enter your email and we'll send you a login code.</p>
+    <form
+      className="flex w-full max-w-sm flex-col gap-3 rounded-xl border border-stone-200 bg-white p-8 text-left shadow-sm"
+      onSubmit={handleSendOtp}
+    >
+      <h1 className="text-2xl font-semibold text-stone-800">Sign In</h1>
+      <p className="text-sm text-emerald-700">Enter your email and we'll send you a login code.</p>
 
-      <label htmlFor="login-email">Email</label>
+      <label htmlFor="login-email" className={`${labelClasses} mt-2`}>
+        Email
+      </label>
       <input
         id="login-email"
         type="email"
@@ -109,11 +125,12 @@ export function Login() {
         required
         value={email}
         onChange={(e) => setEmail(e.target.value)}
+        className={inputClasses}
       />
 
-      {error && <p className="auth-error">{error}</p>}
+      {error && <p className="text-sm text-rose-600">{error}</p>}
 
-      <button type="submit" disabled={loading}>
+      <button type="submit" disabled={loading} className={`${primaryButtonClasses} mt-2`}>
         {loading ? 'Sending...' : 'Send Login Code'}
       </button>
     </form>
