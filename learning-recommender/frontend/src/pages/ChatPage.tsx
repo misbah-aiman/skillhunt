@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import type { Session } from '@supabase/supabase-js';
-import type { ChatMessage, Skill } from '../lib/types';
-import { SuggestionsCard, type ChatGap } from '../components/SuggestionsCard';
+import type { ChatMessage } from '../lib/types';
+import { SuggestionsCard } from '../components/SuggestionsCard';
 import { Spinner } from '../components/Spinner';
 import './ChatPage.css';
 
@@ -14,10 +14,10 @@ export function ChatPage({ session }: ChatPageProps) {
   const [input, setInput] = useState('');
   const [sending, setSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [assessmentComplete, setAssessmentComplete] = useState(false);
-  const [skillsIdentified, setSkillsIdentified] = useState<Skill[]>([]);
-  const [gapsFound, setGapsFound] = useState<ChatGap[]>([]);
-  const [topicsToAdd, setTopicsToAdd] = useState<string[]>([]);
+  const [isComplete, setIsComplete] = useState(false);
+  const [suggestedSkills, setSuggestedSkills] = useState<string[]>([]);
+  const [suggestedGaps, setSuggestedGaps] = useState<string[]>([]);
+  const [suggestedTopics, setSuggestedTopics] = useState<string[]>([]);
   const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -52,10 +52,10 @@ export function ChatPage({ session }: ChatPageProps) {
       }
 
       setMessages((prev) => [...prev, { role: 'assistant', content: json.reply }]);
-      setAssessmentComplete(Boolean(json.assessmentComplete));
-      setSkillsIdentified(json.skillsIdentified ?? []);
-      setGapsFound(json.gapsFound ?? []);
-      setTopicsToAdd(json.topicsToAdd ?? []);
+      setIsComplete(Boolean(json.isComplete));
+      setSuggestedSkills(json.suggestions?.skills ?? []);
+      setSuggestedGaps(json.suggestions?.gaps ?? []);
+      setSuggestedTopics(json.suggestions?.topics ?? []);
     } catch (err) {
       console.error('Chat request failed:', err);
       const detail = err instanceof Error ? err.message : String(err);
@@ -67,7 +67,7 @@ export function ChatPage({ session }: ChatPageProps) {
 
   return (
     <div className="chat-page">
-      <h1>Chat with Scout</h1>
+      <h1>Chat with Alex</h1>
 
       <div className="chat-log">
         {messages.length === 0 && <p className="chat-empty">Say hello to start your skills assessment.</p>}
@@ -101,13 +101,8 @@ export function ChatPage({ session }: ChatPageProps) {
         </button>
       </form>
 
-      {assessmentComplete && (
-        <SuggestionsCard
-          session={session}
-          skillsIdentified={skillsIdentified}
-          gapsFound={gapsFound}
-          topicsToAdd={topicsToAdd}
-        />
+      {isComplete && (
+        <SuggestionsCard session={session} skills={suggestedSkills} gaps={suggestedGaps} topics={suggestedTopics} />
       )}
     </div>
   );

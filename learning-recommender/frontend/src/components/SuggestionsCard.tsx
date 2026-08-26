@@ -1,28 +1,22 @@
 import { useState } from 'react';
 import type { Session } from '@supabase/supabase-js';
-import type { Skill } from '../lib/types';
+import { Spinner } from './Spinner';
 import './SuggestionsCard.css';
-
-export interface ChatGap {
-  skill: string;
-  reason: string;
-}
 
 interface SuggestionsCardProps {
   session: Session;
-  skillsIdentified: Skill[];
-  gapsFound: ChatGap[];
-  topicsToAdd: string[];
+  skills: string[];
+  gaps: string[];
+  topics: string[];
 }
 
-// Lets the user review and edit the AI's findings before they're written to
-// the profile. gapsFound has no profile field to land in, so it's shown as
+// Lets the user review and edit Alex's findings before they're written to
+// the profile. gaps has no profile field to land in, so it's shown as
 // read-only context rather than being editable alongside skills/topics.
-export function SuggestionsCard({ session, skillsIdentified, gapsFound, topicsToAdd }: SuggestionsCardProps) {
-  const [skills, setSkills] = useState<Skill[]>(skillsIdentified);
-  const [topics, setTopics] = useState<string[]>(topicsToAdd);
-  const [skillNameInput, setSkillNameInput] = useState('');
-  const [skillLevelInput, setSkillLevelInput] = useState('');
+export function SuggestionsCard({ session, skills: initialSkills, gaps, topics: initialTopics }: SuggestionsCardProps) {
+  const [skills, setSkills] = useState<string[]>(initialSkills);
+  const [topics, setTopics] = useState<string[]>(initialTopics);
+  const [skillInput, setSkillInput] = useState('');
   const [topicInput, setTopicInput] = useState('');
   const [applying, setApplying] = useState(false);
   const [applied, setApplied] = useState(false);
@@ -30,18 +24,16 @@ export function SuggestionsCard({ session, skillsIdentified, gapsFound, topicsTo
 
   const hasAnything = skills.length > 0 || topics.length > 0;
 
-  function removeSkill(index: number) {
-    setSkills((s) => s.filter((_, i) => i !== index));
+  function removeSkill(name: string) {
+    setSkills((s) => s.filter((item) => item !== name));
   }
 
   function addSkill() {
-    const name = skillNameInput.trim();
-    const level = skillLevelInput.trim();
-    if (name && level) {
-      setSkills((s) => [...s, { name, level }]);
+    const value = skillInput.trim();
+    if (value && !skills.includes(value)) {
+      setSkills((s) => [...s, value]);
     }
-    setSkillNameInput('');
-    setSkillLevelInput('');
+    setSkillInput('');
   }
 
   function removeTopic(topic: string) {
@@ -60,24 +52,29 @@ export function SuggestionsCard({ session, skillsIdentified, gapsFound, topicsTo
     setApplying(true);
     setError(null);
 
-    const res = await fetch('/api/chat/apply-suggestions', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${session.access_token}`,
-      },
-      body: JSON.stringify({ skillsIdentified: skills, topicsToAdd: topics }),
-    });
-    const json = await res.json();
+    try {
+      const res = await fetch('/api/chat/apply-suggestions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({ skills, topics }),
+      });
+      const json = await res.json();
 
-    if (!json.ok) {
-      setError(json.error ?? 'Failed to update your profile.');
+      if (!json.ok) {
+        setError(json.error ?? 'Failed to update your profile.');
+        return;
+      }
+
+      setApplied(true);
+    } catch (err) {
+      const detail = err instanceof Error ? err.message : String(err);
+      setError(`Failed to reach the server: ${detail}`);
+    } finally {
       setApplying(false);
-      return;
     }
-
-    setApplied(true);
-    setApplying(false);
   }
 
   if (applied) {
@@ -90,28 +87,16 @@ export function SuggestionsCard({ session, skillsIdentified, gapsFound, topicsTo
 
   return (
     <div className="suggestions-card">
-      <h2>Based on our chat, here's what I suggest adding to your profile:</h2>
+      <h2>Based on our chat, here's what Alex suggests adding to your profile:</h2>
 
       <section>
         <h3>Skills</h3>
         <div className="tag-input">
           <input
             type="text"
-            placeholder="Skill name"
-            value={skillNameInput}
-            onChange={(e) => setSkillNameInput(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') {
-                e.preventDefault();
-                addSkill();
-              }
-            }}
-          />
-          <input
-            type="text"
-            placeholder="Level"
-            value={skillLevelInput}
-            onChange={(e) => setSkillLevelInput(e.target.value)}
+            placeholder="Add a skill"
+            value={skillInput}
+            onChange={(e) => setSkillInput(e.target.value)}
             onKeyDown={(e) => {
               if (e.key === 'Enter') {
                 e.preventDefault();
@@ -127,10 +112,10 @@ export function SuggestionsCard({ session, skillsIdentified, gapsFound, topicsTo
           <p className="profile-empty">No skills selected.</p>
         ) : (
           <div className="tag-list">
-            {skills.map((skill, index) => (
-              <span className="tag" key={`${skill.name}-${index}`}>
-                {skill.name} · {skill.level}
-                <button type="button" onClick={() => removeSkill(index)} aria-label={`Remove ${skill.name}`}>
+            {skills.map((skill) => (
+              <span className="tag" key={skill}>
+                {skill}
+                <button type="button" onClick={() => removeSkill(skill)} aria-label={`Remove ${skill}`}>
                   &times;
                 </button>
               </span>
@@ -174,14 +159,12 @@ export function SuggestionsCard({ session, skillsIdentified, gapsFound, topicsTo
         )}
       </section>
 
-      {gapsFound.length > 0 && (
+      {gaps.length > 0 && (
         <section>
           <h3>Gaps identified</h3>
           <ul className="gap-list">
-            {gapsFound.map((gap, index) => (
-              <li key={`${gap.skill}-${index}`}>
-                <strong>{gap.skill}</strong> — {gap.reason}
-              </li>
+            {gaps.map((gap, index) => (
+              <li key={index}>{gap}</li>
             ))}
           </ul>
         </section>
@@ -190,7 +173,7 @@ export function SuggestionsCard({ session, skillsIdentified, gapsFound, topicsTo
       {error && <p className="auth-error">{error}</p>}
 
       <button type="button" onClick={handleApply} disabled={applying || !hasAnything}>
-        {applying ? 'Adding...' : 'Confirm & Add to Profile'}
+        {applying ? <Spinner size={14} label="Adding..." /> : 'Confirm & Add to Profile'}
       </button>
     </div>
   );
