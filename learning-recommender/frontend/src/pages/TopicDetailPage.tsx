@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import type { Resource, Topic } from '../lib/types';
+import { Spinner } from '../components/Spinner';
 import './TopicsPage.css';
 import './TopicDetailPage.css';
 
@@ -56,8 +57,12 @@ export function TopicDetailPage({ topicId, onBack }: TopicDetailPageProps) {
         ← Back to Topics
       </button>
 
-      {loading && <p className="topics-status">Loading topic...</p>}
-      {!loading && error && <p className="topics-status topics-error">{error}</p>}
+      {loading && (
+        <div className="status-block">
+          <Spinner label="Loading topic..." />
+        </div>
+      )}
+      {!loading && error && <p className="status-block status-error">{error}</p>}
 
       {!loading && !error && topic && (
         <>
@@ -93,7 +98,9 @@ export function TopicDetailPage({ topicId, onBack }: TopicDetailPageProps) {
           <section>
             <h2>Resources</h2>
             {resources.length === 0 ? (
-              <p className="topics-status">No resources yet.</p>
+              <div className="empty-state">
+                <p>No resources yet for this topic.</p>
+              </div>
             ) : (
               <ul className="resource-list">
                 {resources.map((resource) => (

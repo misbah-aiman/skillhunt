@@ -15,21 +15,26 @@ export function Login() {
     setLoading(true);
     setError(null);
 
-    const res = await fetch('/api/otp/send', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email }),
-    });
-    const json = await res.json();
+    try {
+      const res = await fetch('/api/otp/send', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      });
+      const json = await res.json();
 
-    if (!json.ok) {
-      setError(json.error ?? 'Failed to send code.');
+      if (!json.ok) {
+        setError(json.error ?? 'Failed to send code.');
+        return;
+      }
+
+      setStep('otp');
+    } catch (err) {
+      const detail = err instanceof Error ? err.message : String(err);
+      setError(`Failed to reach the server: ${detail}`);
+    } finally {
       setLoading(false);
-      return;
     }
-
-    setStep('otp');
-    setLoading(false);
   }
 
   async function handleVerifyOtp(e: FormEvent) {
@@ -37,20 +42,26 @@ export function Login() {
     setLoading(true);
     setError(null);
 
-    const { error: verifyError } = await supabase.auth.verifyOtp({
-      email,
-      token: otp,
-      type: 'email',
-    });
+    try {
+      const { error: verifyError } = await supabase.auth.verifyOtp({
+        email,
+        token: otp,
+        type: 'email',
+      });
 
-    if (verifyError) {
-      setError(verifyError.message);
+      if (verifyError) {
+        setError(verifyError.message);
+        setLoading(false);
+        return;
+      }
+
+      // supabase-js persists the session and fires onAuthStateChange;
+      // App.tsx picks that up and switches to Dashboard.
+    } catch (err) {
+      const detail = err instanceof Error ? err.message : String(err);
+      setError(`Failed to reach the server: ${detail}`);
       setLoading(false);
-      return;
     }
-
-    // supabase-js persists the session and fires onAuthStateChange;
-    // App.tsx picks that up and switches to Home.
   }
 
   if (step === 'otp') {

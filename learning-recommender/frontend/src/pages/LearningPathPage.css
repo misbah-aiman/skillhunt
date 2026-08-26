@@ -11,10 +11,10 @@
   justify-content: space-between;
   gap: 1rem;
   margin-bottom: 1.5rem;
+  flex-wrap: wrap;
 }
 
 .learning-path-header h1 {
-  font-size: 1.8rem;
   margin: 0;
 }
 
@@ -31,8 +31,15 @@
   display: flex;
   gap: 1rem;
   padding: 1rem;
-  border: 1px solid #88888855;
-  border-radius: 12px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+  animation: fadeUp var(--transition-base) ease both;
+}
+
+.learning-path-card:hover {
+  border-color: var(--color-primary-border);
+  box-shadow: var(--shadow-sm);
 }
 
 .learning-path-order {
@@ -42,9 +49,9 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 999px;
-  background-color: #646cff22;
-  color: #646cff;
+  border-radius: var(--radius-pill);
+  background-color: var(--color-primary-soft);
+  color: var(--color-primary);
   font-weight: 700;
   font-size: 0.95em;
 }
@@ -60,7 +67,7 @@
 .learning-path-reason {
   margin: 0;
   font-size: 0.9em;
-  color: #888;
+  color: var(--color-text-muted);
 }
 
 .learning-path-resources {
@@ -70,33 +77,49 @@
 
 .learning-path-actions {
   display: flex;
+  flex-wrap: wrap;
   gap: 0.6rem;
   margin-top: 0.4rem;
 }
 
 .mark-complete-button {
   background-color: transparent;
-  border-color: #30a46c88;
-  color: #30a46c;
+  border-color: color-mix(in srgb, var(--color-success) 55%, transparent);
+  color: var(--color-success);
 }
 
-.mark-complete-button:hover {
-  border-color: #30a46c;
+.mark-complete-button:hover:not(:disabled) {
+  border-color: var(--color-success);
 }
 
 .learning-path-updated {
   margin-top: 1.5rem;
   text-align: center;
   font-size: 0.85em;
-  color: #888;
+  color: var(--color-text-muted);
 }
 
 .learning-path-success {
   margin: 0 0 1rem;
   padding: 0.6em 0.9em;
-  border-radius: 8px;
-  background-color: #30a46c22;
-  color: #30a46c;
+  border-radius: var(--radius-sm);
+  background-color: var(--color-success-soft);
+  color: var(--color-success);
   font-size: 0.9em;
   font-weight: 500;
+  animation: fadeUp var(--transition-fast) ease both;
+}
+
+@media (max-width: 480px) {
+  .learning-path-card {
+    flex-direction: column;
+  }
+
+  .learning-path-order {
+    width: auto;
+    height: auto;
+    align-self: flex-start;
+    padding: 0.1em 0.6em;
+    border-radius: var(--radius-pill);
+  }
 }

@@ -1,6 +1,6 @@
 import './NavBar.css';
 
-export type View = 'home' | 'dashboard' | 'topics' | 'chat' | 'path' | 'profile';
+export type View = 'dashboard' | 'path' | 'topics' | 'chat' | 'profile';
 
 interface NavBarProps {
   view: View;
@@ -8,57 +8,48 @@ interface NavBarProps {
   onSignOut: () => void;
 }
 
+const LINKS: { view: View; label: string }[] = [
+  { view: 'dashboard', label: 'Dashboard' },
+  { view: 'path', label: 'Learning Path' },
+  { view: 'topics', label: 'Topics' },
+  { view: 'chat', label: 'Chat' },
+  { view: 'profile', label: 'Profile' },
+];
+
 export function NavBar({ view, onNavigate, onSignOut }: NavBarProps) {
   return (
-    <nav className="navbar">
-      <span className="navbar-brand">SkillHunt</span>
-      <div className="navbar-links">
-        <button
-          type="button"
-          className={`navbar-link${view === 'home' ? ' active' : ''}`}
-          onClick={() => onNavigate('home')}
-        >
-          Home
+    <>
+      <nav className="navbar">
+        <span className="navbar-brand">SkillHunt</span>
+        <div className="navbar-links">
+          {LINKS.map((link) => (
+            <button
+              type="button"
+              key={link.view}
+              className={`navbar-link${view === link.view ? ' active' : ''}`}
+              onClick={() => onNavigate(link.view)}
+            >
+              {link.label}
+            </button>
+          ))}
+        </div>
+        <button type="button" className="link-button" onClick={onSignOut}>
+          Sign Out
         </button>
-        <button
-          type="button"
-          className={`navbar-link${view === 'dashboard' ? ' active' : ''}`}
-          onClick={() => onNavigate('dashboard')}
-        >
-          Dashboard
-        </button>
-        <button
-          type="button"
-          className={`navbar-link${view === 'topics' ? ' active' : ''}`}
-          onClick={() => onNavigate('topics')}
-        >
-          Topics
-        </button>
-        <button
-          type="button"
-          className={`navbar-link${view === 'chat' ? ' active' : ''}`}
-          onClick={() => onNavigate('chat')}
-        >
-          Chat
-        </button>
-        <button
-          type="button"
-          className={`navbar-link${view === 'path' ? ' active' : ''}`}
-          onClick={() => onNavigate('path')}
-        >
-          Learning Path
-        </button>
-        <button
-          type="button"
-          className={`navbar-link${view === 'profile' ? ' active' : ''}`}
-          onClick={() => onNavigate('profile')}
-        >
-          Profile
-        </button>
-      </div>
-      <button type="button" className="link-button" onClick={onSignOut}>
-        Sign Out
-      </button>
-    </nav>
+      </nav>
+
+      <nav className="bottom-nav" aria-label="Primary">
+        {LINKS.map((link) => (
+          <button
+            type="button"
+            key={link.view}
+            className={`bottom-nav-link${view === link.view ? ' active' : ''}`}
+            onClick={() => onNavigate(link.view)}
+          >
+            {link.label}
+          </button>
+        ))}
+      </nav>
+    </>
   );
 }

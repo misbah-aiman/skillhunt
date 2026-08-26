@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import type { Difficulty, Topic } from '../lib/types';
+import { Spinner } from '../components/Spinner';
 import { TopicDetailPage } from './TopicDetailPage';
 import './TopicsPage.css';
 
@@ -90,20 +91,27 @@ export function TopicsPage() {
         </select>
       </div>
 
-      {loading && <p className="topics-status">Loading topics...</p>}
-      {!loading && error && <p className="topics-status topics-error">{error}</p>}
+      {loading && (
+        <div className="status-block">
+          <Spinner label="Loading topics..." />
+        </div>
+      )}
+      {!loading && error && <p className="status-block status-error">{error}</p>}
       {!loading && !error && filteredTopics.length === 0 && (
-        <p className="topics-status">No topics match your filters.</p>
+        <div className="empty-state">
+          <p>No topics found matching your filters.</p>
+        </div>
       )}
 
       {!loading && !error && filteredTopics.length > 0 && (
         <div className="topics-grid">
-          {filteredTopics.map((topic) => (
+          {filteredTopics.map((topic, index) => (
             <article
               className="topic-card"
               key={topic.id}
               role="button"
               tabIndex={0}
+              style={{ animationDelay: `${Math.min(index, 12) * 0.04}s` }}
               onClick={() => setSelectedTopicId(topic.id)}
               onKeyDown={(e) => {
                 if (e.key === 'Enter' || e.key === ' ') {

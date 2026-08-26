@@ -1,15 +1,17 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { Session } from '@supabase/supabase-js';
 import type { LearningPath, RecommendedTopic } from '../lib/types';
+import { Spinner } from '../components/Spinner';
 import { TopicDetailPage } from './TopicDetailPage';
 import './TopicsPage.css';
 import './LearningPathPage.css';
 
 interface LearningPathPageProps {
   session: Session;
+  onNavigateToChat: () => void;
 }
 
-export function LearningPathPage({ session }: LearningPathPageProps) {
+export function LearningPathPage({ session, onNavigateToChat }: LearningPathPageProps) {
   const [recommendations, setRecommendations] = useState<RecommendedTopic[]>([]);
   const [learningPath, setLearningPath] = useState<LearningPath | null>(null);
   const [loading, setLoading] = useState(true);
@@ -120,18 +122,29 @@ export function LearningPathPage({ session }: LearningPathPageProps) {
         <p className="learning-path-success">✓ "{justCompletedTitle}" marked complete!</p>
       )}
 
-      {loading && <p className="topics-status">Generating your learning path...</p>}
-      {!loading && error && <p className="topics-status topics-error">{error}</p>}
+      {loading && (
+        <div className="status-block">
+          <Spinner label="Generating your learning path..." />
+        </div>
+      )}
+      {!loading && error && <p className="status-block status-error">{error}</p>}
       {!loading && !error && recommendations.length === 0 && (
-        <p className="topics-status">
-          No recommendations yet — add some goals or interests to your profile to build a path.
-        </p>
+        <div className="empty-state">
+          <p>No recommendations yet — start a chat to get recommendations.</p>
+          <button type="button" onClick={onNavigateToChat}>
+            Chat with Scout
+          </button>
+        </div>
       )}
 
       {!loading && !error && recommendations.length > 0 && (
         <ol className="learning-path-list">
           {recommendations.map((entry, index) => (
-            <li className="learning-path-card" key={entry.topic.id}>
+            <li
+              className="learning-path-card"
+              key={entry.topic.id}
+              style={{ animationDelay: `${Math.min(index, 12) * 0.05}s` }}
+            >
               <div className="learning-path-order">{index + 1}</div>
 
               <div className="learning-path-card-body">

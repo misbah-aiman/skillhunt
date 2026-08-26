@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, type FormEvent } from 'react';
 import type { Session } from '@supabase/supabase-js';
 import type { ChatMessage, Skill } from '../lib/types';
 import { SuggestionsCard, type ChatGap } from '../components/SuggestionsCard';
+import { Spinner } from '../components/Spinner';
 import './ChatPage.css';
 
 interface ChatPageProps {
@@ -77,13 +78,15 @@ export function ChatPage({ session }: ChatPageProps) {
         ))}
         {sending && (
           <div className="chat-bubble-row chat-bubble-row-assistant">
-            <div className="chat-bubble chat-bubble-assistant chat-bubble-pending">Thinking...</div>
+            <div className="chat-bubble chat-bubble-assistant chat-bubble-pending">
+              <Spinner size={14} label="Thinking..." />
+            </div>
           </div>
         )}
         <div ref={bottomRef} />
       </div>
 
-      {error && <p className="auth-error">{error}</p>}
+      {error && <p className="auth-error chat-error">{error}</p>}
 
       <form className="chat-input-row" onSubmit={handleSubmit}>
         <input

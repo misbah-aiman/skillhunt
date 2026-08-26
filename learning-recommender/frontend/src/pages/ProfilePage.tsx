@@ -2,6 +2,7 @@ import { useEffect, useState, type FormEvent } from 'react';
 import type { Session } from '@supabase/supabase-js';
 import type { Profile, Skill } from '../lib/types';
 import { ProfileFields } from '../components/ProfileFields';
+import { Spinner } from '../components/Spinner';
 import './ProfilePage.css';
 
 interface ProfilePageProps {
@@ -84,7 +85,11 @@ export function ProfilePage({ session }: ProfilePageProps) {
   }
 
   if (loading) {
-    return <p className="profile-status">Loading profile...</p>;
+    return (
+      <div className="status-block">
+        <Spinner label="Loading profile..." />
+      </div>
+    );
   }
 
   return (

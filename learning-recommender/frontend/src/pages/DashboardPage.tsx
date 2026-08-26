@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import type { Session } from '@supabase/supabase-js';
 import type { Progress, RecommendedTopic } from '../lib/types';
+import { Spinner } from '../components/Spinner';
 import { TopicDetailPage } from './TopicDetailPage';
 import './TopicsPage.css';
 import './DashboardPage.css';
@@ -77,8 +78,12 @@ export function DashboardPage({ session, onNavigateToChat }: DashboardPageProps)
     <div className="dashboard-page">
       <h1>Dashboard</h1>
 
-      {loading && <p className="topics-status">Loading your dashboard...</p>}
-      {!loading && error && <p className="topics-status topics-error">{error}</p>}
+      {loading && (
+        <div className="status-block">
+          <Spinner label="Loading your dashboard..." />
+        </div>
+      )}
+      {!loading && error && <p className="status-block status-error">{error}</p>}
 
       {!loading && !error && (
         <>
@@ -113,9 +118,12 @@ export function DashboardPage({ session, onNavigateToChat }: DashboardPageProps)
                 </button>
               </div>
             ) : (
-              <p className="topics-status">
-                No recommendations yet — add some goals or interests to your profile to get a path.
-              </p>
+              <div className="empty-state">
+                <p>No recommendations yet — start a chat to get recommendations.</p>
+                <button type="button" onClick={onNavigateToChat}>
+                  Chat with Scout
+                </button>
+              </div>
             )}
           </section>
 

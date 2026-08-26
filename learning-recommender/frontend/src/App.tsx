@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 import type { Session } from '@supabase/supabase-js';
 import { supabase } from './lib/supabaseClient';
 import { Login } from './pages/Login';
-import { Home } from './pages/Home';
 import { ProfilePage } from './pages/ProfilePage';
 import { TopicsPage } from './pages/TopicsPage';
 import { ChatPage } from './pages/ChatPage';
@@ -10,12 +9,13 @@ import { LearningPathPage } from './pages/LearningPathPage';
 import { DashboardPage } from './pages/DashboardPage';
 import { NavBar, type View } from './components/NavBar';
 import { OnboardedRoute } from './components/OnboardedRoute';
+import { Spinner } from './components/Spinner';
 import './App.css';
 
 function App() {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
-  const [view, setView] = useState<View>('home');
+  const [view, setView] = useState<View>('dashboard');
   const [isOnboarded, setIsOnboarded] = useState<boolean | null>(null);
 
   useEffect(() => {
@@ -66,23 +66,34 @@ function App() {
   }, [session]);
 
   if (loading) {
-    return null;
+    return (
+      <div className="auth-container">
+        <Spinner size={28} label="Loading SkillHunt..." />
+      </div>
+    );
   }
 
   if (session) {
     if (isOnboarded === null) {
-      return null;
+      return (
+        <div className="auth-container">
+          <Spinner size={28} label="Loading your profile..." />
+        </div>
+      );
     }
+
+    const goToChat = () => setView('chat');
 
     return (
       <OnboardedRoute session={session} isOnboarded={isOnboarded} onOnboarded={() => setIsOnboarded(true)}>
         <NavBar view={view} onNavigate={setView} onSignOut={() => supabase.auth.signOut()} />
-        {view === 'home' && <Home />}
-        {view === 'dashboard' && <DashboardPage session={session} onNavigateToChat={() => setView('chat')} />}
-        {view === 'topics' && <TopicsPage />}
-        {view === 'chat' && <ChatPage session={session} />}
-        {view === 'path' && <LearningPathPage session={session} />}
-        {view === 'profile' && <ProfilePage session={session} />}
+        <div className="app-page" key={view}>
+          {view === 'dashboard' && <DashboardPage session={session} onNavigateToChat={goToChat} />}
+          {view === 'topics' && <TopicsPage />}
+          {view === 'chat' && <ChatPage session={session} />}
+          {view === 'path' && <LearningPathPage session={session} onNavigateToChat={goToChat} />}
+          {view === 'profile' && <ProfilePage session={session} />}
+        </div>
       </OnboardedRoute>
     );
   }
