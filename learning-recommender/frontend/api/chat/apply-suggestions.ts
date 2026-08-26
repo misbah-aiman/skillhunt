@@ -1,24 +1,14 @@
 import { getAuthedUser } from "../_lib/auth.js";
 import { applySuggestionsToProfile, type ApplySuggestionsInput } from "../_lib/chatController.js";
-import type { Skill } from "../_lib/types.js";
-
-function isSkill(value: unknown): value is Skill {
-  return (
-    typeof value === "object" &&
-    value !== null &&
-    typeof (value as Skill).name === "string" &&
-    typeof (value as Skill).level === "string"
-  );
-}
 
 function isApplySuggestionsInput(body: unknown): body is ApplySuggestionsInput {
   if (typeof body !== "object" || body === null) return false;
   const b = body as Record<string, unknown>;
 
-  const skills = b.skillsIdentified;
-  const topics = b.topicsToAdd;
+  const skills = b.skills;
+  const topics = b.topics;
 
-  if (skills !== undefined && !(Array.isArray(skills) && skills.every(isSkill))) {
+  if (skills !== undefined && !(Array.isArray(skills) && skills.every((s) => typeof s === "string"))) {
     return false;
   }
 
@@ -43,7 +33,7 @@ export async function POST(request: Request) {
 
   if (!isApplySuggestionsInput(body)) {
     return Response.json(
-      { ok: false, error: "Provide a non-empty skillsIdentified and/or topicsToAdd array" },
+      { ok: false, error: "Provide a non-empty skills and/or topics array" },
       { status: 400 },
     );
   }

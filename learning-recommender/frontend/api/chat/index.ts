@@ -1,5 +1,5 @@
 import { getAuthedUser } from "../_lib/auth.js";
-import { sendChatMessage } from "../_lib/chatController.js";
+import { getChatHistory, sendChatMessage } from "../_lib/chatController.js";
 import type { ChatMessage } from "../_lib/types.js";
 
 function isChatMessage(value: unknown): value is ChatMessage {
@@ -8,6 +8,25 @@ function isChatMessage(value: unknown): value is ChatMessage {
   return (v.role === "user" || v.role === "assistant") && typeof v.content === "string";
 }
 
+export async function GET(request: Request) {
+  const { user, error: authError } = await getAuthedUser(request);
+
+  if (!user) {
+    return Response.json({ ok: false, error: authError ?? "Unauthorized" }, { status: 401 });
+  }
+
+  const { messages, error } = await getChatHistory(user.id);
+
+  if (error) {
+    return Response.json({ ok: false, error }, { status: 500 });
+  }
+
+  return Response.json({ ok: true, messages });
+}
+
+// The request body may include a `userId` field (per the client contract),
+// but it is never trusted — the authenticated session is the only source of
+// truth for whose conversation this is.
 export async function POST(request: Request) {
   const { user, error: authError } = await getAuthedUser(request);
 
@@ -24,12 +43,11 @@ export async function POST(request: Request) {
     );
   }
 
-  const { reply, assessmentComplete, skillsIdentified, gapsFound, topicsToAdd, error } =
-    await sendChatMessage(messages);
+  const { reply, isComplete, suggestions, error } = await sendChatMessage(user.id, messages);
 
   if (error) {
     return Response.json({ ok: false, error }, { status: 500 });
   }
 
-  return Response.json({ ok: true, reply, assessmentComplete, skillsIdentified, gapsFound, topicsToAdd });
+  return Response.json({ ok: true, reply, suggestions, isComplete });
 }

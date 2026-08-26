@@ -59,7 +59,7 @@ export function TopicDetailPage({ topicId, onBack }: TopicDetailPageProps) {
   return (
     <div className="mx-auto flex w-full max-w-2xl animate-fade-up flex-col gap-4 text-left">
       <button type="button" onClick={onBack} className="self-start text-sm font-medium text-emerald-700 hover:text-emerald-800">
-        ← Back to Topics
+        ← Back
       </button>
 
       {loading && (

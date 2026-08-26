@@ -148,6 +148,40 @@ export async function sendChatMessage(userId: string, messages: ChatMessage[]): 
   }
 }
 
+export interface ChatHistoryMessage {
+  id: string;
+  role: "user" | "assistant";
+  message: string;
+  createdAt: string;
+}
+
+export interface ChatHistoryResult {
+  messages: ChatHistoryMessage[] | null;
+  error: string | null;
+}
+
+export async function getChatHistory(userId: string): Promise<ChatHistoryResult> {
+  const { data, error } = await supabase
+    .from("conversations")
+    .select("id, role, message, created_at")
+    .eq("user_id", userId)
+    .order("created_at", { ascending: true });
+
+  if (error) {
+    return { messages: null, error: error.message };
+  }
+
+  const rows = data as { id: string; role: "user" | "assistant"; message: string; created_at: string }[];
+  const messages = rows.map((row) => ({
+    id: row.id,
+    role: row.role,
+    message: row.message,
+    createdAt: row.created_at,
+  }));
+
+  return { messages, error: null };
+}
+
 export interface ApplySuggestionsInput {
   skills?: string[];
   topics?: string[];

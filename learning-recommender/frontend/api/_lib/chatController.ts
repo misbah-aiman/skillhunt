@@ -1,217 +1,208 @@
-import { ApiError, GoogleGenAI, Type } from "@google/genai";
-import type { ChatMessage, Profile, Skill } from "./types.js";
+import { GoogleGenerativeAI, SchemaType, type Schema } from "@google/generative-ai";
+import { supabase } from "./supabase.js";
+import type { ChatMessage, Skill } from "./types.js";
 import { getProfile, updateProfile } from "./profileController.js";
 
 // Reads GEMINI_API_KEY from the environment — never hardcode the key.
-const client = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY ?? "");
 
-// "-preview" model: Google may change/retire it without the usual notice
-// (gemini-3-pro-preview was already retired mid-development). Using flash
-// because this API key's free tier has zero quota for the pro model
-// (confirmed via a live 429: "limit: 0" on generate_content_free_tier
-// for gemini-3.1-pro) — switch to a "-pro-" variant once billing is on.
-const MODEL = "gemini-3-flash-preview";
+// gemini-1.5-flash is fully retired for this API key, and gemini-2.5-flash
+// is closed to new users — both confirmed via live 404s on generateContent,
+// the second explicitly pointing at this as the replacement.
+const MODEL = "gemini-3.6-flash";
 
 // The onboarding persona: introduces itself, draws out the user's current
-// skills/experience/goals, runs a short assessment, and — once it has
-// enough to go on — finalizes skills/gaps/topic findings for the profile.
-const SYSTEM_PROMPT = `You are Scout, SkillHunt's onboarding assistant, running a short skills assessment.
+// skills/experience/goals/knowledge level one question at a time, and —
+// after 6-8 exchanges — summarizes into suggestions for the profile.
+const SYSTEM_PROMPT = `You are Alex, a friendly learning assistant for SkillHunt's Learning Recommender.
 
 In this conversation you:
-1. Introduce yourself briefly on your first turn and explain that you're here to
-   assess the user's current skills and goals so SkillHunt can recommend what to
-   learn next.
-2. Ask about the user's current skills, experience level, and career or learning
-   goals — one or two focused questions at a time, not a long form.
-3. Once you have enough information (usually after a few exchanges), set
-   assessmentComplete to true and finalize your findings.
-4. Keep your reply warm and concise, focused on a single next question or step
-   at a time until the assessment is complete.
+1. Ask about the user's current skills, interests, goals, and knowledge level —
+   ONE focused question at a time, never a long form.
+2. Keep every reply to 2-3 sentences at most — replies may be read aloud, so
+   stay short and conversational.
+3. After roughly 6-8 exchanges, once you have enough to go on, summarize what
+   you've learned: set isComplete to true and populate suggestions.
+4. Until isComplete is true, leave suggestions.skills, suggestions.gaps, and
+   suggestions.topics empty.
 
 On every turn, populate these fields from what's been said so far:
-- skillsIdentified: skills the user already has, as stated or clearly implied.
-  Leave empty until something concrete has come up.
-- gapsFound: specific gaps between what the user has and what their stated
-  goals require. Leave empty until you have enough to ground a gap in what
-  they've actually told you.
-- topicsToAdd: topic or interest names worth adding to the user's profile,
-  based on the gaps you've found. Leave empty until assessmentComplete is true.
+- suggestions.skills: skill names the user already has, as stated or clearly implied.
+- suggestions.gaps: specific gaps between what the user has and their stated goals.
+- suggestions.topics: topic or interest names worth adding to their profile.
 
-Only set assessmentComplete to true once you're confident in these findings —
-don't rush it after a single message.`;
+Only set isComplete to true once you're confident in these findings — don't
+rush it after a single exchange.`;
 
-const CHAT_RESPONSE_SCHEMA = {
-  type: Type.OBJECT,
+const CHAT_RESPONSE_SCHEMA: Schema = {
+  type: SchemaType.OBJECT,
   properties: {
-    reply: { type: Type.STRING, description: "The assistant's conversational reply to the user" },
-    assessmentComplete: {
-      type: Type.BOOLEAN,
-      description: "True once enough is known to finalize skillsIdentified, gapsFound, and topicsToAdd",
+    reply: {
+      type: SchemaType.STRING,
+      description: "Alex's conversational reply to the user, 2-3 sentences max",
     },
-    skillsIdentified: {
-      type: Type.ARRAY,
-      description: "Skills the user already has, as stated or clearly implied in the conversation",
-      items: {
-        type: Type.OBJECT,
-        properties: {
-          name: { type: Type.STRING, description: "Skill name" },
-          level: {
-            type: Type.STRING,
-            description: "The user's level at this skill, e.g. beginner/intermediate/advanced",
-          },
+    isComplete: {
+      type: SchemaType.BOOLEAN,
+      description: "True once enough is known to finalize suggestions",
+    },
+    suggestions: {
+      type: SchemaType.OBJECT,
+      properties: {
+        skills: {
+          type: SchemaType.ARRAY,
+          description: "Skill names the user already has",
+          items: { type: SchemaType.STRING },
         },
-        required: ["name", "level"],
-      },
-    },
-    gapsFound: {
-      type: Type.ARRAY,
-      description: "Specific gaps between the user's current skills and their stated goals",
-      items: {
-        type: Type.OBJECT,
-        properties: {
-          skill: { type: Type.STRING, description: "The skill or topic identified as a gap" },
-          reason: { type: Type.STRING, description: "Why this is a gap, grounded in what the user has said" },
+        gaps: {
+          type: SchemaType.ARRAY,
+          description: "Gaps between the user's current skills and their stated goals",
+          items: { type: SchemaType.STRING },
         },
-        required: ["skill", "reason"],
+        topics: {
+          type: SchemaType.ARRAY,
+          description: "Topic or interest names to add to the user's profile",
+          items: { type: SchemaType.STRING },
+        },
       },
-    },
-    topicsToAdd: {
-      type: Type.ARRAY,
-      description: "Topic or interest names to add to the user's profile, based on the gaps found",
-      items: { type: Type.STRING },
+      required: ["skills", "gaps", "topics"],
     },
   },
-  required: ["reply", "assessmentComplete", "skillsIdentified", "gapsFound", "topicsToAdd"],
+  required: ["reply", "isComplete", "suggestions"],
 };
 
-export interface ChatGap {
-  skill: string;
-  reason: string;
+const model = genAI.getGenerativeModel({
+  model: MODEL,
+  systemInstruction: SYSTEM_PROMPT,
+  generationConfig: {
+    responseMimeType: "application/json",
+    responseSchema: CHAT_RESPONSE_SCHEMA,
+  },
+});
+
+export interface ChatSuggestions {
+  skills: string[];
+  gaps: string[];
+  topics: string[];
 }
 
 interface ParsedChatResponse {
   reply: string;
-  assessmentComplete: boolean;
-  skillsIdentified: Skill[];
-  gapsFound: ChatGap[];
-  topicsToAdd: string[];
+  isComplete: boolean;
+  suggestions: ChatSuggestions;
 }
 
 export interface ChatResult {
   reply: string | null;
-  assessmentComplete: boolean | null;
-  skillsIdentified: Skill[] | null;
-  gapsFound: ChatGap[] | null;
-  topicsToAdd: string[] | null;
+  isComplete: boolean | null;
+  suggestions: ChatSuggestions | null;
   error: string | null;
 }
 
 function emptyResult(error: string): ChatResult {
-  return {
-    reply: null,
-    assessmentComplete: null,
-    skillsIdentified: null,
-    gapsFound: null,
-    topicsToAdd: null,
-    error,
-  };
+  return { reply: null, isComplete: null, suggestions: null, error };
 }
 
-function sleep(ms: number): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
+// Best-effort: a save failure shouldn't break the conversation the user is
+// actively having, so this logs rather than surfacing an error turn-to-turn.
+async function saveMessage(userId: string, role: "user" | "assistant", message: string): Promise<void> {
+  const { error } = await supabase.from("conversations").insert({ user_id: userId, role, message });
 
-// gemini-3-flash-preview returns 503 UNAVAILABLE during demand spikes fairly
-// often; Google's own guidance is that these are short-lived, so one retry
-// with a short delay clears most of them without surfacing an error to the user.
-async function generateWithRetry(messages: ChatMessage[]) {
-  const request = {
-    model: MODEL,
-    contents: messages.map((message) => ({
-      role: message.role === "assistant" ? "model" : "user",
-      parts: [{ text: message.content }],
-    })),
-    config: {
-      systemInstruction: SYSTEM_PROMPT,
-      responseMimeType: "application/json",
-      responseJsonSchema: CHAT_RESPONSE_SCHEMA,
-    },
-  };
-
-  try {
-    return await client.models.generateContent(request);
-  } catch (error) {
-    if (error instanceof ApiError && error.status === 503) {
-      await sleep(1000);
-      return await client.models.generateContent(request);
-    }
-
-    throw error;
+  if (error) {
+    console.error("Failed to save chat message:", error.message);
   }
 }
 
-export async function sendChatMessage(messages: ChatMessage[]): Promise<ChatResult> {
-  try {
-    const response = await generateWithRetry(messages);
+export async function sendChatMessage(userId: string, messages: ChatMessage[]): Promise<ChatResult> {
+  const lastMessage = messages[messages.length - 1];
+  if (lastMessage?.role === "user") {
+    await saveMessage(userId, "user", lastMessage.content);
+  }
 
-    if (!response.text) {
+  try {
+    const result = await model.generateContent({
+      contents: messages.map((message) => ({
+        role: message.role === "assistant" ? "model" : "user",
+        parts: [{ text: message.content }],
+      })),
+    });
+
+    const text = result.response.text();
+
+    if (!text) {
       return emptyResult("No response from Gemini");
     }
 
-    const parsed = JSON.parse(response.text) as ParsedChatResponse;
+    const parsed = JSON.parse(text) as ParsedChatResponse;
+
+    await saveMessage(userId, "assistant", parsed.reply);
 
     return {
       reply: parsed.reply,
-      assessmentComplete: parsed.assessmentComplete,
-      skillsIdentified: parsed.skillsIdentified,
-      gapsFound: parsed.gapsFound,
-      topicsToAdd: parsed.topicsToAdd,
+      isComplete: parsed.isComplete,
+      suggestions: parsed.suggestions,
       error: null,
     };
   } catch (error) {
-    if (error instanceof ApiError) {
-      if (error.status === 401 || error.status === 403) {
-        return emptyResult("Invalid Gemini API key");
-      }
-
-      if (error.status === 429) {
-        return emptyResult("Rate limited by the Gemini API, try again shortly");
-      }
-
-      if (error.status === 503) {
-        return emptyResult("Gemini is overloaded right now, please try again in a moment");
-      }
-
-      return emptyResult(error.message);
-    }
-
     const fallbackMessage = error instanceof Error ? error.message : "Failed to get chat response";
     return emptyResult(fallbackMessage);
   }
 }
 
+export interface ChatHistoryMessage {
+  id: string;
+  role: "user" | "assistant";
+  message: string;
+  createdAt: string;
+}
+
+export interface ChatHistoryResult {
+  messages: ChatHistoryMessage[] | null;
+  error: string | null;
+}
+
+export async function getChatHistory(userId: string): Promise<ChatHistoryResult> {
+  const { data, error } = await supabase
+    .from("conversations")
+    .select("id, role, message, created_at")
+    .eq("user_id", userId)
+    .order("created_at", { ascending: true });
+
+  if (error) {
+    return { messages: null, error: error.message };
+  }
+
+  const rows = data as { id: string; role: "user" | "assistant"; message: string; created_at: string }[];
+  const messages = rows.map((row) => ({
+    id: row.id,
+    role: row.role,
+    message: row.message,
+    createdAt: row.created_at,
+  }));
+
+  return { messages, error: null };
+}
+
 export interface ApplySuggestionsInput {
-  skillsIdentified?: Skill[];
-  topicsToAdd?: string[];
+  skills?: string[];
+  topics?: string[];
 }
 
 export interface ApplySuggestionsResult {
-  profile: Profile | null;
+  profile: Awaited<ReturnType<typeof getProfile>>["profile"];
   error: string | null;
   notFound?: boolean;
 }
 
-// Adds a new skill, or replaces the level of an existing one (matched
-// case-insensitively by name) — a re-assessment can update a stale level.
-function mergeSkills(existing: Skill[], additions: Skill[]): Skill[] {
+// Adds a new skill, or leaves an existing one alone (matched case-insensitively
+// by name) — the chat only gives us names, not levels, so a name that's
+// already on the profile keeps whatever level the user set for it.
+function mergeSkills(existing: Skill[], additions: string[]): Skill[] {
   const merged = [...existing];
 
-  for (const addition of additions) {
-    const index = merged.findIndex((skill) => skill.name.toLowerCase() === addition.name.toLowerCase());
-    if (index === -1) {
-      merged.push(addition);
-    } else {
-      merged[index] = addition;
+  for (const name of additions) {
+    const alreadyHas = merged.some((skill) => skill.name.toLowerCase() === name.toLowerCase());
+    if (!alreadyHas) {
+      merged.push({ name, level: "beginner" });
     }
   }
 
@@ -230,9 +221,8 @@ function mergeInterests(existing: string[], additions: string[]): string[] {
   return merged;
 }
 
-// Applies confirmed chat suggestions to the learner's profile: skills
-// merge into profile.skills, topics merge into profile.interests.
-// gapsFound has no profile field to land in, so it's not applied here.
+// Applies confirmed chat suggestions to the learner's profile: skills merge
+// into profile.skills, topics merge into profile.interests.
 export async function applySuggestionsToProfile(
   userId: string,
   input: ApplySuggestionsInput,
@@ -247,8 +237,8 @@ export async function applySuggestionsToProfile(
     return { profile: null, error: null, notFound: true };
   }
 
-  const skills = input.skillsIdentified ? mergeSkills(existing.skills, input.skillsIdentified) : existing.skills;
-  const interests = input.topicsToAdd ? mergeInterests(existing.interests, input.topicsToAdd) : existing.interests;
+  const skills = input.skills ? mergeSkills(existing.skills, input.skills) : existing.skills;
+  const interests = input.topics ? mergeInterests(existing.interests, input.topics) : existing.interests;
 
   const { profile, error } = await updateProfile(userId, {
     skills,

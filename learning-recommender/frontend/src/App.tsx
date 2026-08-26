@@ -3,21 +3,20 @@ import type { Session } from '@supabase/supabase-js';
 import { supabase } from './lib/supabaseClient';
 import { Login } from './pages/Login';
 import { ProfilePage } from './pages/ProfilePage';
-import { TopicsPage } from './pages/TopicsPage';
-import { ChatPage } from './pages/ChatPage';
 import { CallPage } from './pages/CallPage';
-import { PersonaPage } from './pages/PersonaPage';
 import { LearningPathPage } from './pages/LearningPathPage';
 import { DashboardPage } from './pages/DashboardPage';
 import { NavBar, type View } from './components/NavBar';
 import { OnboardedRoute } from './components/OnboardedRoute';
 import { Spinner } from './components/Spinner';
+import { ChatWidget } from './components/ChatWidget';
 
 function App() {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const [view, setView] = useState<View>('dashboard');
   const [isOnboarded, setIsOnboarded] = useState<boolean | null>(null);
+  const [chatOpen, setChatOpen] = useState(false);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
@@ -83,24 +82,24 @@ function App() {
       );
     }
 
-    const goToChat = () => setView('chat');
-    const goToCall = () => setView('call');
-    const goToPersona = () => setView('persona');
+    const openChat = () => setChatOpen(true);
+    const openCall = () => setView('call');
 
     return (
       <OnboardedRoute session={session} isOnboarded={isOnboarded} onOnboarded={() => setIsOnboarded(true)}>
         <div className="mx-auto max-w-6xl px-4 pb-24 pt-8 sm:px-8 sm:pb-8">
           <NavBar view={view} onNavigate={setView} onSignOut={() => supabase.auth.signOut()} />
           <div className="animate-fade-up" key={view}>
-            {view === 'dashboard' && <DashboardPage session={session} onNavigateToChat={goToChat} />}
-            {view === 'topics' && <TopicsPage />}
-            {view === 'persona' && <PersonaPage onNavigateToChat={goToChat} onNavigateToCall={goToCall} />}
-            {view === 'chat' && <ChatPage session={session} />}
-            {view === 'call' && <CallPage session={session} onEndCall={goToPersona} />}
-            {view === 'path' && <LearningPathPage session={session} onNavigateToChat={goToChat} />}
+            {view === 'dashboard' && <DashboardPage session={session} onNavigateToChat={openChat} />}
+            {view === 'call' && <CallPage session={session} onEndCall={() => setView('dashboard')} />}
+            {view === 'path' && <LearningPathPage session={session} onNavigateToChat={openChat} />}
             {view === 'profile' && <ProfilePage session={session} />}
           </div>
         </div>
+
+        {view !== 'call' && (
+          <ChatWidget session={session} open={chatOpen} onOpenChange={setChatOpen} onOpenCall={openCall} />
+        )}
       </OnboardedRoute>
     );
   }

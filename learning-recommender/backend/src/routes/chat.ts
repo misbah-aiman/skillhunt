@@ -1,5 +1,10 @@
 import { Router } from "express";
-import { applySuggestionsToProfile, sendChatMessage, type ApplySuggestionsInput } from "../controllers/chatController.js";
+import {
+  applySuggestionsToProfile,
+  getChatHistory,
+  sendChatMessage,
+  type ApplySuggestionsInput,
+} from "../controllers/chatController.js";
 import type { ChatMessage } from "../lib/types.js";
 
 function isChatMessage(value: unknown): value is ChatMessage {
@@ -30,6 +35,17 @@ function isApplySuggestionsInput(body: unknown): body is ApplySuggestionsInput {
 }
 
 export const chatRouter = Router();
+
+chatRouter.get("/", async (req, res) => {
+  const { messages, error } = await getChatHistory(req.user!.id);
+
+  if (error) {
+    res.status(500).json({ ok: false, error });
+    return;
+  }
+
+  res.json({ ok: true, messages });
+});
 
 // The request body may include a `userId` field (per the client contract),
 // but it is never trusted — the authenticated session (req.user, set by the

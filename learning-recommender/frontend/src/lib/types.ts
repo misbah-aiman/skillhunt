@@ -52,6 +52,16 @@ export interface ChatMessage {
   content: string;
 }
 
+// Maps to a row of the public.conversations table (see supabase/migrations)
+// as returned by GET /api/chat — every message ever exchanged, not just the
+// current live session.
+export interface ChatHistoryMessage {
+  id: string;
+  role: "user" | "assistant";
+  message: string;
+  createdAt: string;
+}
+
 export interface RecommendedTopic {
   topic: Topic;
   score: number;
