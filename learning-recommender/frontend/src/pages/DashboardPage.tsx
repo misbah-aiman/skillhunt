@@ -130,14 +130,14 @@ export function DashboardPage({ session, onNavigateToChat }: DashboardPageProps)
               <div className={emptyStateClasses}>
                 <p>No recommendations yet — start a chat to get recommendations.</p>
                 <button type="button" onClick={onNavigateToChat} className={primaryButtonClasses}>
-                  Chat with Alex
+                  Chat with Nova
                 </button>
               </div>
             )}
           </section>
 
           <button type="button" className={`${secondaryButtonClasses} w-full`} onClick={onNavigateToChat}>
-            Chat with Alex again
+            Chat with Nova again
           </button>
         </>
       )}

@@ -11,7 +11,7 @@ interface SuggestionsCardProps {
   topics: string[];
 }
 
-// Lets the user review and edit Alex's findings before they're written to
+// Lets the user review and edit Nova's findings before they're written to
 // the profile. gaps has no profile field to land in, so it's shown as
 // read-only context rather than being editable alongside skills/topics.
 export function SuggestionsCard({ session, skills: initialSkills, gaps, topics: initialTopics }: SuggestionsCardProps) {
@@ -89,7 +89,7 @@ export function SuggestionsCard({ session, skills: initialSkills, gaps, topics: 
   return (
     <div className={`${cardClasses} mt-6 flex animate-fade-up flex-col gap-4 border-emerald-200 bg-emerald-50/40`}>
       <h2 className="font-display text-lg text-stone-800">
-        Based on our chat, here's what Alex suggests adding to your profile:
+        Based on our chat, here's what Nova suggests adding to your profile:
       </h2>
 
       <section className="flex flex-col gap-2">

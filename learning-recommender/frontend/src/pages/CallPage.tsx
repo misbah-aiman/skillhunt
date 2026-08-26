@@ -133,9 +133,9 @@ export function CallPage({ session, onEndCall }: CallPageProps) {
               ? 'Assessment complete'
               : 'Call ended'
             : isSpeaking
-              ? 'Alex is speaking...'
+              ? 'Nova is speaking...'
               : sending
-                ? 'Alex is thinking...'
+                ? 'Nova is thinking...'
                 : isListening
                   ? 'Listening...'
                   : 'Press the mic to talk'}

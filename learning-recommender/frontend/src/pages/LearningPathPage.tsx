@@ -140,7 +140,7 @@ export function LearningPathPage({ session, onNavigateToChat }: LearningPathPage
         <div className={emptyStateClasses}>
           <p>No recommendations yet — start a chat to get recommendations.</p>
           <button type="button" onClick={onNavigateToChat} className={primaryButtonClasses}>
-            Chat with Alex
+            Chat with Nova
           </button>
         </div>
       )}

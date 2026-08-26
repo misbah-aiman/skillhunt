@@ -14,7 +14,7 @@ interface ChatWidgetProps {
 }
 
 const GREETING =
-  "Hi, I'm Alex! I'm here to learn about your skills and goals so I can recommend what to learn next. What are you working on?";
+  "Hi, I'm Nova! I'm here to learn about your skills and goals so I can recommend what to learn next. What are you working on?";
 
 type Mode = 'chat' | 'history';
 
@@ -140,7 +140,7 @@ export function ChatWidget({ session, open, onOpenChange, onOpenCall }: ChatWidg
       <button
         type="button"
         onClick={() => onOpenChange(true)}
-        aria-label="Chat with Alex"
+        aria-label="Chat with Nova"
         className="fixed right-4 bottom-[calc(5rem+env(safe-area-inset-bottom,0px))] z-30 flex h-14 w-14 items-center justify-center rounded-full bg-emerald-600 text-2xl text-white shadow-lg transition-transform hover:scale-105 hover:bg-emerald-700 sm:right-6 sm:bottom-6"
       >
         🤖
@@ -154,7 +154,7 @@ export function ChatWidget({ session, open, onOpenChange, onOpenCall }: ChatWidg
         <div className="flex items-center gap-2.5">
           <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-lg">🤖</div>
           <div>
-            <p className="font-display text-sm font-semibold leading-tight text-stone-800">Alex</p>
+            <p className="font-display text-sm font-semibold leading-tight text-stone-800">Nova</p>
             <p className="text-xs text-stone-500">Learning Assistant</p>
           </div>
         </div>
@@ -173,8 +173,8 @@ export function ChatWidget({ session, open, onOpenChange, onOpenCall }: ChatWidg
           <button
             type="button"
             onClick={handleCallClick}
-            aria-label="Call Alex"
-            title="Call Alex"
+            aria-label="Call Nova"
+            title="Call Nova"
             className="flex h-9 w-9 items-center justify-center rounded-full text-stone-400 transition-colors hover:bg-emerald-100 hover:text-emerald-700"
           >
             <PhoneIcon className="h-4 w-4" />
