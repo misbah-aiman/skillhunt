@@ -117,20 +117,42 @@ function emptyResult(error: string): ChatResult {
   };
 }
 
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+// gemini-3-flash-preview returns 503 UNAVAILABLE during demand spikes fairly
+// often; Google's own guidance is that these are short-lived, so one retry
+// with a short delay clears most of them without surfacing an error to the user.
+async function generateWithRetry(messages: ChatMessage[]) {
+  const request = {
+    model: MODEL,
+    contents: messages.map((message) => ({
+      role: message.role === "assistant" ? "model" : "user",
+      parts: [{ text: message.content }],
+    })),
+    config: {
+      systemInstruction: SYSTEM_PROMPT,
+      responseMimeType: "application/json",
+      responseJsonSchema: CHAT_RESPONSE_SCHEMA,
+    },
+  };
+
+  try {
+    return await client.models.generateContent(request);
+  } catch (error) {
+    if (error instanceof ApiError && error.status === 503) {
+      await sleep(1000);
+      return await client.models.generateContent(request);
+    }
+
+    throw error;
+  }
+}
+
 export async function sendChatMessage(messages: ChatMessage[]): Promise<ChatResult> {
   try {
-    const response = await client.models.generateContent({
-      model: MODEL,
-      contents: messages.map((message) => ({
-        role: message.role === "assistant" ? "model" : "user",
-        parts: [{ text: message.content }],
-      })),
-      config: {
-        systemInstruction: SYSTEM_PROMPT,
-        responseMimeType: "application/json",
-        responseJsonSchema: CHAT_RESPONSE_SCHEMA,
-      },
-    });
+    const response = await generateWithRetry(messages);
 
     if (!response.text) {
       return emptyResult("No response from Gemini");
@@ -154,6 +176,10 @@ export async function sendChatMessage(messages: ChatMessage[]): Promise<ChatResu
 
       if (error.status === 429) {
         return emptyResult("Rate limited by the Gemini API, try again shortly");
+      }
+
+      if (error.status === 503) {
+        return emptyResult("Gemini is overloaded right now, please try again in a moment");
       }
 
       return emptyResult(error.message);

@@ -166,6 +166,34 @@ export function toConversation(row: ConversationRow): Conversation {
   };
 }
 
+// Maps to the public.learning_paths table (see supabase/migrations). One
+// row per user — regenerating a path overwrites the previous one.
+export interface LearningPath {
+  id: string;
+  userId: string;
+  topicIds: string[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface LearningPathRow {
+  id: string;
+  user_id: string;
+  topic_ids: string[];
+  created_at: string;
+  updated_at: string;
+}
+
+export function toLearningPath(row: LearningPathRow): LearningPath {
+  return {
+    id: row.id,
+    userId: row.user_id,
+    topicIds: row.topic_ids,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  };
+}
+
 function isSkill(value: unknown): value is Skill {
   return (
     typeof value === "object" &&

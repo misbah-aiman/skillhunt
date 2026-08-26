@@ -55,8 +55,10 @@ export function ChatPage({ session }: ChatPageProps) {
       setSkillsIdentified(json.skillsIdentified ?? []);
       setGapsFound(json.gapsFound ?? []);
       setTopicsToAdd(json.topicsToAdd ?? []);
-    } catch {
-      setError('Failed to reach the server. Is it running?');
+    } catch (err) {
+      console.error('Chat request failed:', err);
+      const detail = err instanceof Error ? err.message : String(err);
+      setError(`Failed to reach the server: ${detail}`);
     } finally {
       setSending(false);
     }
