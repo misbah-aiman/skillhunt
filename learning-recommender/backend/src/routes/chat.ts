@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { applySuggestionsToProfile, sendChatMessage, type ApplySuggestionsInput } from "../controllers/chatController.js";
-import type { ChatMessage, Skill } from "../lib/types.js";
+import type { ChatMessage } from "../lib/types.js";
 
 function isChatMessage(value: unknown): value is ChatMessage {
   if (typeof value !== "object" || value === null) return false;
@@ -8,23 +8,14 @@ function isChatMessage(value: unknown): value is ChatMessage {
   return (v.role === "user" || v.role === "assistant") && typeof v.content === "string";
 }
 
-function isSkill(value: unknown): value is Skill {
-  return (
-    typeof value === "object" &&
-    value !== null &&
-    typeof (value as Skill).name === "string" &&
-    typeof (value as Skill).level === "string"
-  );
-}
-
 function isApplySuggestionsInput(body: unknown): body is ApplySuggestionsInput {
   if (typeof body !== "object" || body === null) return false;
   const b = body as Record<string, unknown>;
 
-  const skills = b.skillsIdentified;
-  const topics = b.topicsToAdd;
+  const skills = b.skills;
+  const topics = b.topics;
 
-  if (skills !== undefined && !(Array.isArray(skills) && skills.every(isSkill))) {
+  if (skills !== undefined && !(Array.isArray(skills) && skills.every((s) => typeof s === "string"))) {
     return false;
   }
 
@@ -40,6 +31,10 @@ function isApplySuggestionsInput(body: unknown): body is ApplySuggestionsInput {
 
 export const chatRouter = Router();
 
+// The request body may include a `userId` field (per the client contract),
+// but it is never trusted — the authenticated session (req.user, set by the
+// `authenticate` middleware this router is mounted behind) is the only
+// source of truth for whose conversation this is.
 chatRouter.post("/", async (req, res) => {
   const { messages } = req.body;
 
@@ -48,23 +43,19 @@ chatRouter.post("/", async (req, res) => {
     return;
   }
 
-  const { reply, assessmentComplete, skillsIdentified, gapsFound, topicsToAdd, error } =
-    await sendChatMessage(messages);
+  const { reply, isComplete, suggestions, error } = await sendChatMessage(req.user!.id, messages);
 
   if (error) {
     res.status(500).json({ ok: false, error });
     return;
   }
 
-  res.json({ ok: true, reply, assessmentComplete, skillsIdentified, gapsFound, topicsToAdd });
+  res.json({ ok: true, reply, suggestions, isComplete });
 });
 
 chatRouter.post("/apply-suggestions", async (req, res) => {
   if (!isApplySuggestionsInput(req.body)) {
-    res.status(400).json({
-      ok: false,
-      error: "Provide a non-empty skillsIdentified and/or topicsToAdd array",
-    });
+    res.status(400).json({ ok: false, error: "Provide a non-empty skills and/or topics array" });
     return;
   }
 
