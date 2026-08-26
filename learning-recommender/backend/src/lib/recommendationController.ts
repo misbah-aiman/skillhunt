@@ -7,6 +7,7 @@ export interface RecommendedTopic {
   topic: Topic;
   score: number;
   matchedOn: string[];
+  resourceCount: number;
 }
 
 export interface RecommendationsResult {
@@ -94,7 +95,7 @@ export async function getRecommendations(userId: string, limit: number = DEFAULT
   const known = buildKnownTopics(profile.skills);
   const goalsAndInterests = [...profile.goals, ...profile.interests];
 
-  const recommendations = (topics ?? [])
+  const ranked = (topics ?? [])
     .filter((topic) => !known.has(normalize(topic.title))) // already completed
     .filter((topic) => prerequisitesMet(topic, known)) // prerequisites satisfied
     .map((topic) => ({ topic, ...scoreTopic(topic, goalsAndInterests) }))
@@ -109,7 +110,30 @@ export async function getRecommendations(userId: string, limit: number = DEFAULT
     })
     .slice(0, limit);
 
+  const resourceCounts = await getResourceCounts(ranked.map((entry) => entry.topic.id));
+  const recommendations = ranked.map((entry) => ({
+    ...entry,
+    resourceCount: resourceCounts.get(entry.topic.id) ?? 0,
+  }));
+
   return { recommendations, error: null };
+}
+
+// Counts resources per topic for just the final, already-ranked shortlist —
+// cheap in practice since that list is capped at `limit`, unlike the full catalog.
+async function getResourceCounts(topicIds: string[]): Promise<Map<string, number>> {
+  const counts = new Map<string, number>();
+  if (topicIds.length === 0) return counts;
+
+  const { data, error } = await supabase.from("resources").select("topic_id").in("topic_id", topicIds);
+
+  if (error || !data) return counts;
+
+  for (const row of data as { topic_id: string }[]) {
+    counts.set(row.topic_id, (counts.get(row.topic_id) ?? 0) + 1);
+  }
+
+  return counts;
 }
 
 export interface GenerateLearningPathResult {

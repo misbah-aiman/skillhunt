@@ -1,6 +1,6 @@
 import './NavBar.css';
 
-export type View = 'home' | 'topics' | 'chat' | 'profile';
+export type View = 'home' | 'topics' | 'chat' | 'path' | 'profile';
 
 interface NavBarProps {
   view: View;
@@ -33,6 +33,13 @@ export function NavBar({ view, onNavigate, onSignOut }: NavBarProps) {
           onClick={() => onNavigate('chat')}
         >
           Chat
+        </button>
+        <button
+          type="button"
+          className={`navbar-link${view === 'path' ? ' active' : ''}`}
+          onClick={() => onNavigate('path')}
+        >
+          Learning Path
         </button>
         <button
           type="button"

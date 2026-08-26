@@ -6,6 +6,7 @@ import { Home } from './pages/Home';
 import { ProfilePage } from './pages/ProfilePage';
 import { TopicsPage } from './pages/TopicsPage';
 import { ChatPage } from './pages/ChatPage';
+import { LearningPathPage } from './pages/LearningPathPage';
 import { NavBar, type View } from './components/NavBar';
 import { OnboardedRoute } from './components/OnboardedRoute';
 import './App.css';
@@ -78,6 +79,7 @@ function App() {
         {view === 'home' && <Home />}
         {view === 'topics' && <TopicsPage />}
         {view === 'chat' && <ChatPage session={session} />}
+        {view === 'path' && <LearningPathPage session={session} />}
         {view === 'profile' && <ProfilePage session={session} />}
       </OnboardedRoute>
     );

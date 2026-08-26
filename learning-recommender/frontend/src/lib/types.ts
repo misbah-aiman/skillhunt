@@ -52,6 +52,23 @@ export interface ChatMessage {
   content: string;
 }
 
+export interface RecommendedTopic {
+  topic: Topic;
+  score: number;
+  matchedOn: string[];
+  resourceCount: number;
+}
+
+// Maps to the public.learning_paths table (see supabase/migrations). One
+// row per user — regenerating a path overwrites the previous one.
+export interface LearningPath {
+  id: string;
+  userId: string;
+  topicIds: string[];
+  createdAt: string;
+  updatedAt: string;
+}
+
 export type ConversationStatus = "in_progress" | "completed";
 
 // Maps to the public.conversations table (see supabase/migrations).

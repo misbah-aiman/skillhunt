@@ -1,0 +1,81 @@
+.learning-path-page {
+  width: 100%;
+  max-width: 800px;
+  margin: 0 auto;
+  text-align: left;
+}
+
+.learning-path-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.learning-path-header h1 {
+  font-size: 1.8rem;
+  margin: 0;
+}
+
+.learning-path-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.learning-path-card {
+  display: flex;
+  gap: 1rem;
+  padding: 1rem;
+  border: 1px solid #88888855;
+  border-radius: 12px;
+}
+
+.learning-path-order {
+  flex-shrink: 0;
+  width: 2rem;
+  height: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background-color: #646cff22;
+  color: #646cff;
+  font-weight: 700;
+  font-size: 0.95em;
+}
+
+.learning-path-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.learning-path-reason {
+  margin: 0;
+  font-size: 0.9em;
+  color: #888;
+}
+
+.learning-path-resources {
+  margin: 0;
+  font-size: 0.85em;
+}
+
+.learning-path-card-body button {
+  align-self: flex-start;
+  margin-top: 0.4rem;
+}
+
+.learning-path-updated {
+  margin-top: 1.5rem;
+  text-align: center;
+  font-size: 0.85em;
+  color: #888;
+}
