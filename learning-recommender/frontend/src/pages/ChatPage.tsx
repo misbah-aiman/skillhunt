@@ -34,28 +34,32 @@ export function ChatPage({ session }: ChatPageProps) {
     setSending(true);
     setError(null);
 
-    const res = await fetch('/api/chat', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${session.access_token}`,
-      },
-      body: JSON.stringify({ messages: nextMessages }),
-    });
-    const json = await res.json();
+    try {
+      const res = await fetch('/api/chat', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({ messages: nextMessages }),
+      });
+      const json = await res.json();
 
-    if (!json.ok) {
-      setError(json.error ?? 'Failed to get a response.');
+      if (!json.ok) {
+        setError(json.error ?? 'Failed to get a response.');
+        return;
+      }
+
+      setMessages((prev) => [...prev, { role: 'assistant', content: json.reply }]);
+      setAssessmentComplete(Boolean(json.assessmentComplete));
+      setSkillsIdentified(json.skillsIdentified ?? []);
+      setGapsFound(json.gapsFound ?? []);
+      setTopicsToAdd(json.topicsToAdd ?? []);
+    } catch {
+      setError('Failed to reach the server. Is it running?');
+    } finally {
       setSending(false);
-      return;
     }
-
-    setMessages((prev) => [...prev, { role: 'assistant', content: json.reply }]);
-    setAssessmentComplete(Boolean(json.assessmentComplete));
-    setSkillsIdentified(json.skillsIdentified ?? []);
-    setGapsFound(json.gapsFound ?? []);
-    setTopicsToAdd(json.topicsToAdd ?? []);
-    setSending(false);
   }
 
   return (
