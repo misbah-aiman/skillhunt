@@ -5,6 +5,8 @@ import { Login } from './pages/Login';
 import { ProfilePage } from './pages/ProfilePage';
 import { TopicsPage } from './pages/TopicsPage';
 import { ChatPage } from './pages/ChatPage';
+import { CallPage } from './pages/CallPage';
+import { PersonaPage } from './pages/PersonaPage';
 import { LearningPathPage } from './pages/LearningPathPage';
 import { DashboardPage } from './pages/DashboardPage';
 import { NavBar, type View } from './components/NavBar';
@@ -83,6 +85,8 @@ function App() {
     }
 
     const goToChat = () => setView('chat');
+    const goToCall = () => setView('call');
+    const goToPersona = () => setView('persona');
 
     return (
       <OnboardedRoute session={session} isOnboarded={isOnboarded} onOnboarded={() => setIsOnboarded(true)}>
@@ -90,7 +94,9 @@ function App() {
         <div className="app-page" key={view}>
           {view === 'dashboard' && <DashboardPage session={session} onNavigateToChat={goToChat} />}
           {view === 'topics' && <TopicsPage />}
+          {view === 'persona' && <PersonaPage onNavigateToChat={goToChat} onNavigateToCall={goToCall} />}
           {view === 'chat' && <ChatPage session={session} />}
+          {view === 'call' && <CallPage session={session} onEndCall={goToPersona} />}
           {view === 'path' && <LearningPathPage session={session} onNavigateToChat={goToChat} />}
           {view === 'profile' && <ProfilePage session={session} />}
         </div>
