@@ -69,6 +69,20 @@ export interface LearningPath {
   updatedAt: string;
 }
 
+export type ProgressStatus = "in_progress" | "completed";
+
+// Maps to the public.progress table (see supabase/migrations). One row
+// per (user, topic) tracking how far the learner has gotten on it.
+export interface Progress {
+  id: string;
+  userId: string;
+  topicId: string;
+  status: ProgressStatus;
+  completedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export type ConversationStatus = "in_progress" | "completed";
 
 // Maps to the public.conversations table (see supabase/migrations).

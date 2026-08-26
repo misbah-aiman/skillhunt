@@ -7,6 +7,7 @@ import { ProfilePage } from './pages/ProfilePage';
 import { TopicsPage } from './pages/TopicsPage';
 import { ChatPage } from './pages/ChatPage';
 import { LearningPathPage } from './pages/LearningPathPage';
+import { DashboardPage } from './pages/DashboardPage';
 import { NavBar, type View } from './components/NavBar';
 import { OnboardedRoute } from './components/OnboardedRoute';
 import './App.css';
@@ -77,6 +78,7 @@ function App() {
       <OnboardedRoute session={session} isOnboarded={isOnboarded} onOnboarded={() => setIsOnboarded(true)}>
         <NavBar view={view} onNavigate={setView} onSignOut={() => supabase.auth.signOut()} />
         {view === 'home' && <Home />}
+        {view === 'dashboard' && <DashboardPage session={session} onNavigateToChat={() => setView('chat')} />}
         {view === 'topics' && <TopicsPage />}
         {view === 'chat' && <ChatPage session={session} />}
         {view === 'path' && <LearningPathPage session={session} />}

@@ -6,6 +6,7 @@ import { profileRouter } from "./routes/profile.js";
 import { topicsRouter } from "./routes/topics.js";
 import { chatRouter } from "./routes/chat.js";
 import { recommendationsRouter } from "./routes/recommendations.js";
+import { progressRouter } from "./routes/progress.js";
 
 export const app = express();
 
@@ -78,3 +79,4 @@ app.use("/api/profile", authenticate, profileRouter);
 app.use("/api/topics", topicsRouter);
 app.use("/api/chat", authenticate, chatRouter);
 app.use("/api/recommendations", authenticate, recommendationsRouter);
+app.use("/api/progress", authenticate, progressRouter);

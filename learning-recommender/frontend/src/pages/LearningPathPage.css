@@ -68,9 +68,20 @@
   font-size: 0.85em;
 }
 
-.learning-path-card-body button {
-  align-self: flex-start;
+.learning-path-actions {
+  display: flex;
+  gap: 0.6rem;
   margin-top: 0.4rem;
+}
+
+.mark-complete-button {
+  background-color: transparent;
+  border-color: #30a46c88;
+  color: #30a46c;
+}
+
+.mark-complete-button:hover {
+  border-color: #30a46c;
 }
 
 .learning-path-updated {
@@ -78,4 +89,14 @@
   text-align: center;
   font-size: 0.85em;
   color: #888;
+}
+
+.learning-path-success {
+  margin: 0 0 1rem;
+  padding: 0.6em 0.9em;
+  border-radius: 8px;
+  background-color: #30a46c22;
+  color: #30a46c;
+  font-size: 0.9em;
+  font-weight: 500;
 }

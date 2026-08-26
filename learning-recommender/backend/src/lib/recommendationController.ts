@@ -1,4 +1,5 @@
 import { getProfile } from "./profileController.js";
+import { getCompletedTopics } from "./progressController.js";
 import { supabase } from "./supabase.js";
 import { getAllTopics } from "./topicController.js";
 import { toLearningPath, type Difficulty, type LearningPath, type LearningPathRow, type Profile, type Topic } from "./types.js";
@@ -26,12 +27,16 @@ function normalize(value: string): string {
   return value.trim().toLowerCase();
 }
 
-// There's no separate completion-tracking table yet, so a same-named skill
-// on the profile is the closest signal we have for "already covered" —
-// this doubles as both the completed-topics filter and the prerequisite check,
-// since prerequisites are stored as free-text topic titles (see the topics migration).
-function buildKnownTopics(skills: Profile["skills"]): Set<string> {
-  return new Set(skills.map((skill) => normalize(skill.name)));
+// "Known" feeds both the completed-topics filter and the prerequisite check
+// (prerequisites are stored as free-text topic titles — see the topics
+// migration), so a topic counts as known either by a matching profile skill
+// or by an explicit completed row in the progress table.
+function buildKnownTopics(skills: Profile["skills"], completedTitles: string[]): Set<string> {
+  const known = new Set(skills.map((skill) => normalize(skill.name)));
+  for (const title of completedTitles) {
+    known.add(normalize(title));
+  }
+  return known;
 }
 
 function prerequisitesMet(topic: Topic, known: Set<string>): boolean {
@@ -92,11 +97,23 @@ export async function getRecommendations(userId: string, limit: number = DEFAULT
     return { recommendations: null, error: topicsError };
   }
 
-  const known = buildKnownTopics(profile.skills);
+  const { topicIds: completedTopicIds, error: progressError } = await getCompletedTopics(userId);
+
+  if (progressError) {
+    return { recommendations: null, error: progressError };
+  }
+
+  const completedIdSet = new Set(completedTopicIds ?? []);
+  const completedTitles = (topics ?? [])
+    .filter((topic) => completedIdSet.has(topic.id))
+    .map((topic) => topic.title);
+
+  const known = buildKnownTopics(profile.skills, completedTitles);
   const goalsAndInterests = [...profile.goals, ...profile.interests];
 
   const ranked = (topics ?? [])
-    .filter((topic) => !known.has(normalize(topic.title))) // already completed
+    .filter((topic) => !completedIdSet.has(topic.id)) // explicitly marked complete
+    .filter((topic) => !known.has(normalize(topic.title))) // completed via skill match
     .filter((topic) => prerequisitesMet(topic, known)) // prerequisites satisfied
     .map((topic) => ({ topic, ...scoreTopic(topic, goalsAndInterests) }))
     .filter((entry) => entry.score > 0) // must match a stated goal/interest
