@@ -115,6 +115,10 @@ export interface LessonResult {
   notFound?: boolean;
 }
 
+function isRetryable503(error: unknown): boolean {
+  return error instanceof Error && error.message.includes("503");
+}
+
 async function generateLesson(topic: TopicSummaryRow): Promise<GeneratedLesson> {
   const prompt = [
     `Title: ${topic.title}`,
@@ -126,7 +130,17 @@ async function generateLesson(topic: TopicSummaryRow): Promise<GeneratedLesson> 
     .filter(Boolean)
     .join("\n");
 
-  const result = await model.generateContent(prompt);
+  // A lesson is generated once ever per topic, so a transient overload on
+  // the first person to open a given topic would otherwise be permanent
+  // for everyone until someone retries — worth one retry here specifically.
+  let result;
+  try {
+    result = await model.generateContent(prompt);
+  } catch (error) {
+    if (!isRetryable503(error)) throw error;
+    result = await model.generateContent(prompt);
+  }
+
   const text = result.response.text();
 
   if (!text) {
