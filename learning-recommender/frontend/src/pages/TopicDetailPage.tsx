@@ -58,8 +58,12 @@ export function TopicDetailPage({ topicId, onBack }: TopicDetailPageProps) {
 
   return (
     <div className="mx-auto flex w-full max-w-2xl animate-fade-up flex-col gap-4 text-left">
-      <button type="button" onClick={onBack} className="self-start text-sm font-medium text-emerald-700 hover:text-emerald-800">
-        ← Back
+      <button
+        type="button"
+        onClick={onBack}
+        className="group inline-flex w-fit items-center gap-1 self-start text-sm font-medium text-emerald-700 transition-colors hover:text-emerald-800"
+      >
+        <span className="transition-transform duration-200 group-hover:-translate-x-0.5">←</span> Back
       </button>
 
       {loading && (
@@ -111,7 +115,7 @@ export function TopicDetailPage({ topicId, onBack }: TopicDetailPageProps) {
                 {resources.map((resource) => (
                   <li
                     key={resource.id}
-                    className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-stone-200 px-3 py-2.5 transition-colors hover:border-emerald-300"
+                    className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-stone-200 bg-white px-3.5 py-2.5 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-emerald-300 hover:shadow-md"
                   >
                     <a href={resource.url} target="_blank" rel="noreferrer" className="font-medium text-emerald-700 hover:text-emerald-800">
                       {resource.title}

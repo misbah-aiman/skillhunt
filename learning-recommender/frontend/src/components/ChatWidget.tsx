@@ -141,21 +141,27 @@ export function ChatWidget({ session, open, onOpenChange, onOpenCall }: ChatWidg
         type="button"
         onClick={() => onOpenChange(true)}
         aria-label="Chat with Nova"
-        className="fixed right-4 bottom-[calc(5rem+env(safe-area-inset-bottom,0px))] z-30 flex h-14 w-14 items-center justify-center rounded-full bg-emerald-600 text-2xl text-white shadow-lg transition-transform hover:scale-105 hover:bg-emerald-700 sm:right-6 sm:bottom-6"
+        className="fixed right-4 bottom-[calc(5rem+env(safe-area-inset-bottom,0px))] z-30 flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 text-2xl text-white shadow-[0_4px_12px_-2px_rgba(0,0,0,0.15),0_8px_24px_-4px_rgba(5,150,105,0.55)] transition-all duration-200 hover:scale-110 hover:shadow-[0_6px_16px_-2px_rgba(0,0,0,0.18),0_12px_28px_-4px_rgba(5,150,105,0.6)] active:scale-95 sm:right-6 sm:bottom-6"
       >
+        <span className="absolute inset-0 -z-10 animate-ping rounded-full bg-emerald-500/30 [animation-duration:2.5s]" />
         🤖
       </button>
     );
   }
 
   return (
-    <div className="animate-fade-up fixed inset-x-4 bottom-[calc(5rem+env(safe-area-inset-bottom,0px))] z-30 flex h-[70vh] max-h-[32rem] flex-col overflow-hidden rounded-2xl border border-stone-200 bg-white shadow-2xl sm:inset-x-auto sm:bottom-6 sm:right-6 sm:w-96">
-      <div className="flex items-center justify-between gap-2 border-b border-stone-200 px-4 py-3">
+    <div className="animate-scale-in fixed inset-x-4 bottom-[calc(5rem+env(safe-area-inset-bottom,0px))] z-30 flex h-[70vh] max-h-[32rem] flex-col overflow-hidden rounded-2xl border border-stone-200/80 bg-white shadow-[0_8px_16px_rgba(0,0,0,0.08),0_32px_64px_-16px_rgba(41,37,36,0.35)] origin-bottom-right sm:inset-x-auto sm:bottom-6 sm:right-6 sm:w-96">
+      <div className="flex items-center justify-between gap-2 border-b border-stone-200/80 bg-gradient-to-r from-emerald-50 to-teal-50/60 px-4 py-3">
         <div className="flex items-center gap-2.5">
-          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-lg">🤖</div>
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 text-lg shadow-[0_4px_10px_-3px_rgba(5,150,105,0.5)]">
+            🤖
+          </div>
           <div>
             <p className="font-display text-sm font-semibold leading-tight text-stone-800">Nova</p>
-            <p className="text-xs text-stone-500">Learning Assistant</p>
+            <p className="flex items-center gap-1 text-xs text-stone-500">
+              <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+              Learning Assistant
+            </p>
           </div>
         </div>
         <div className="flex items-center gap-1">
@@ -245,7 +251,7 @@ export function ChatWidget({ session, open, onOpenChange, onOpenCall }: ChatWidg
 
           {error && <p className="px-4 pb-1 text-xs text-rose-600">{error}</p>}
 
-          <form className="flex gap-2 border-t border-stone-200 p-3" onSubmit={handleSubmit}>
+          <form className="flex gap-2 border-t border-stone-200/80 bg-white p-3" onSubmit={handleSubmit}>
             <input
               type="text"
               placeholder="Type a message..."

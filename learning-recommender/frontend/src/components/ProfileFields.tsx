@@ -71,7 +71,7 @@ export function ProfileFields({
 
   return (
     <>
-      <section className="flex flex-col gap-2">
+      <section className="flex flex-col gap-2 border-b border-stone-200/70 pb-6">
         <h2 className="font-display text-lg text-stone-800">Skills</h2>
         <div className="flex flex-wrap gap-2">
           <input
@@ -114,7 +114,7 @@ export function ProfileFields({
         </div>
       </section>
 
-      <section className="flex flex-col gap-2">
+      <section className="flex flex-col gap-2 border-b border-stone-200/70 pb-6">
         <h2 className="font-display text-lg text-stone-800">Interests</h2>
         <div className="flex flex-wrap gap-2">
           <input
@@ -143,7 +143,7 @@ export function ProfileFields({
         </div>
       </section>
 
-      <section className="flex flex-col gap-2">
+      <section className="flex flex-col gap-2 border-b border-stone-200/70 pb-6">
         <h2 className="font-display text-lg text-stone-800">Goals</h2>
         <div className="flex flex-wrap gap-2">
           <input

@@ -125,7 +125,7 @@ export function LearningPathPage({ session, onNavigateToChat }: LearningPathPage
       </div>
 
       {justCompletedTitle && (
-        <p className="animate-fade-up mb-4 rounded-lg bg-emerald-50 px-3.5 py-2.5 text-sm font-medium text-emerald-800">
+        <p className="animate-scale-in mb-4 rounded-xl border border-emerald-200/80 bg-gradient-to-r from-emerald-50 to-teal-50 px-3.5 py-2.5 text-sm font-medium text-emerald-800 shadow-sm">
           ✓ "{justCompletedTitle}" marked complete!
         </p>
       )}
@@ -151,9 +151,9 @@ export function LearningPathPage({ session, onNavigateToChat }: LearningPathPage
             <li
               key={entry.topic.id}
               style={{ animationDelay: `${Math.min(index, 12) * 0.05}s` }}
-              className="animate-fade-up flex flex-col gap-3 rounded-xl border border-stone-200 bg-white p-4 shadow-sm transition-shadow hover:shadow-md sm:flex-row"
+              className="animate-fade-up group flex flex-col gap-3 rounded-2xl border border-stone-200/80 bg-white p-4 shadow-[0_1px_2px_rgba(0,0,0,0.03),0_10px_28px_-14px_rgba(41,37,36,0.18)] transition-all duration-300 hover:-translate-y-0.5 hover:border-emerald-200 hover:shadow-[0_1px_2px_rgba(0,0,0,0.04),0_16px_32px_-14px_rgba(41,37,36,0.24)] sm:flex-row"
             >
-              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-sm font-bold text-emerald-700">
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 text-sm font-bold text-white shadow-[0_4px_10px_-3px_rgba(5,150,105,0.5)] transition-transform duration-300 group-hover:scale-110">
                 {index + 1}
               </div>
 
@@ -183,7 +183,7 @@ export function LearningPathPage({ session, onNavigateToChat }: LearningPathPage
                     type="button"
                     onClick={() => handleComplete(entry.topic.id, entry.topic.title)}
                     disabled={completingId === entry.topic.id}
-                    className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg border border-emerald-300 bg-white px-4 py-2 text-sm font-semibold text-emerald-700 transition-colors hover:bg-emerald-50 disabled:cursor-not-allowed disabled:opacity-50"
+                    className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-emerald-300 bg-white px-4 py-2 text-sm font-semibold text-emerald-700 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:bg-emerald-50 hover:shadow-md active:translate-y-0 active:scale-[0.97] disabled:pointer-events-none disabled:translate-y-0 disabled:cursor-not-allowed disabled:opacity-50 disabled:shadow-none"
                   >
                     {completingId === entry.topic.id ? '✓ Marking...' : '✓ Mark as Complete'}
                   </button>

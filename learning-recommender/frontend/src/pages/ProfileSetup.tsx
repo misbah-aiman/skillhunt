@@ -50,9 +50,14 @@ export function ProfileSetup({ session, onComplete }: ProfileSetupProps) {
 
   return (
     <div className="flex w-full justify-center">
-      <form className="mx-auto flex w-full max-w-lg flex-col gap-6 text-left" onSubmit={handleSubmit}>
-        <h1 className="text-2xl font-semibold text-stone-800">Welcome to SkillHunt</h1>
-        <p className="-mt-4 text-stone-500">Let's set up your profile so we can find the skills that find you the job.</p>
+      <form className="animate-fade-up mx-auto flex w-full max-w-lg flex-col gap-6 text-left" onSubmit={handleSubmit}>
+        <div>
+          <span className="animate-float mb-3 flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 text-xl shadow-[0_6px_14px_-4px_rgba(5,150,105,0.55)]">
+            🎯
+          </span>
+          <h1 className="font-display text-2xl font-semibold text-stone-800">Welcome to SkillHunt</h1>
+          <p className="mt-1 text-stone-500">Let's set up your profile so we can find the skills that find you the job.</p>
+        </div>
 
         <ProfileFields
           skills={skills}
@@ -65,7 +70,7 @@ export function ProfileSetup({ session, onComplete }: ProfileSetupProps) {
           onBioChange={setBio}
         />
 
-        {error && <p className="text-sm text-rose-600">{error}</p>}
+        {error && <p className="animate-scale-in text-sm text-rose-600">{error}</p>}
 
         <button type="submit" disabled={saving} className={`${primaryButtonClasses} self-start`}>
           {saving ? 'Saving...' : 'Finish Setup'}

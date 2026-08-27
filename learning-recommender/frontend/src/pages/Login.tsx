@@ -68,9 +68,12 @@ export function Login() {
   if (step === 'otp') {
     return (
       <form
-        className="flex w-full max-w-sm flex-col gap-3 rounded-xl border border-stone-200 bg-white p-8 text-left shadow-sm"
+        className="animate-scale-in flex w-full max-w-sm flex-col gap-3 rounded-2xl border border-stone-200/80 bg-white p-8 text-left shadow-[0_1px_2px_rgba(0,0,0,0.04),0_24px_48px_-16px_rgba(41,37,36,0.22)]"
         onSubmit={handleVerifyOtp}
       >
+        <span className="mb-1 flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 text-xl shadow-[0_6px_14px_-4px_rgba(5,150,105,0.55)]">
+          🔑
+        </span>
         <h1 className="text-2xl font-semibold text-stone-800">Enter Your Code</h1>
         <p className="text-sm text-emerald-700">We emailed a login code to {email}.</p>
 
@@ -109,10 +112,13 @@ export function Login() {
 
   return (
     <form
-      className="flex w-full max-w-sm flex-col gap-3 rounded-xl border border-stone-200 bg-white p-8 text-left shadow-sm"
+      className="animate-scale-in flex w-full max-w-sm flex-col gap-3 rounded-2xl border border-stone-200/80 bg-white p-8 text-left shadow-[0_1px_2px_rgba(0,0,0,0.04),0_24px_48px_-16px_rgba(41,37,36,0.22)]"
       onSubmit={handleSendOtp}
     >
-      <h1 className="text-2xl font-semibold text-stone-800">Sign In</h1>
+      <span className="animate-float mb-1 flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 text-xl shadow-[0_6px_14px_-4px_rgba(5,150,105,0.55)]">
+        🎯
+      </span>
+      <h1 className="font-display text-2xl font-semibold text-stone-800">Sign In</h1>
       <p className="text-sm text-emerald-700">Enter your email and we'll send you a login code.</p>
 
       <label htmlFor="login-email" className={`${labelClasses} mt-2`}>

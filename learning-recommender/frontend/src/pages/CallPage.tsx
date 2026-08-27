@@ -122,7 +122,7 @@ export function CallPage({ session, onEndCall }: CallPageProps) {
     <div className="mx-auto flex w-full max-w-xl flex-col items-center gap-5 text-center">
       <div className="flex flex-col items-center gap-1.5">
         <div
-          className={`flex h-24 w-24 items-center justify-center rounded-full border-2 border-emerald-200 bg-emerald-50 text-4xl transition-shadow ${isSpeaking ? 'animate-pulse-ring border-emerald-400' : ''}`}
+          className={`flex h-24 w-24 items-center justify-center rounded-full border-2 border-emerald-200 bg-gradient-to-br from-emerald-50 to-teal-50 text-4xl shadow-[0_8px_24px_-8px_rgba(5,150,105,0.35)] transition-all duration-300 ${isSpeaking ? 'animate-pulse-ring scale-105 border-emerald-400' : ''}`}
         >
           🤖
         </div>
@@ -180,8 +180,10 @@ export function CallPage({ session, onEndCall }: CallPageProps) {
           onClick={handleMicClick}
           disabled={micDisabled}
           aria-label={isListening ? 'Stop talking' : 'Start talking'}
-          className={`flex h-16 w-16 items-center justify-center rounded-full text-2xl text-white transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${
-            isListening ? 'animate-pulse-ring bg-rose-600' : 'bg-emerald-600 hover:bg-emerald-700'
+          className={`flex h-16 w-16 items-center justify-center rounded-full text-2xl text-white shadow-lg transition-all duration-200 hover:scale-105 active:scale-95 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 ${
+            isListening
+              ? 'animate-pulse-ring bg-gradient-to-b from-rose-500 to-rose-600'
+              : 'bg-gradient-to-b from-emerald-500 to-emerald-600 hover:from-emerald-500 hover:to-emerald-700'
           }`}
           style={isListening ? ({ '--pulse-ring-color': 'rgb(225 29 72 / 0.2)' } as CSSProperties) : undefined}
         >
@@ -190,7 +192,7 @@ export function CallPage({ session, onEndCall }: CallPageProps) {
         <button
           type="button"
           onClick={handleEndCall}
-          className="inline-flex min-h-11 items-center justify-center rounded-lg border border-rose-300 bg-white px-4 py-2 text-sm font-semibold text-rose-600 transition-colors hover:bg-rose-50"
+          className="inline-flex min-h-11 items-center justify-center rounded-xl border border-rose-300 bg-white px-4 py-2 text-sm font-semibold text-rose-600 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:bg-rose-50 hover:shadow-md active:translate-y-0 active:scale-[0.97]"
         >
           End Call
         </button>

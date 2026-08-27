@@ -80,15 +80,19 @@ export function SuggestionsCard({ session, skills: initialSkills, gaps, topics: 
 
   if (applied) {
     return (
-      <div className={`${cardClasses} mt-6 animate-fade-up border-emerald-200 bg-emerald-50`}>
+      <div className={`${cardClasses} animate-scale-in mt-6 flex items-center gap-3 border-emerald-200 bg-gradient-to-br from-emerald-50 to-teal-50`}>
+        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-emerald-500 text-sm text-white shadow-[0_4px_10px_-3px_rgba(5,150,105,0.5)]">
+          ✓
+        </span>
         <p className="text-sm font-medium text-emerald-800">Added to your profile.</p>
       </div>
     );
   }
 
   return (
-    <div className={`${cardClasses} mt-6 flex animate-fade-up flex-col gap-4 border-emerald-200 bg-emerald-50/40`}>
-      <h2 className="font-display text-lg text-stone-800">
+    <div className={`${cardClasses} animate-fade-up mt-6 flex flex-col gap-4 border-emerald-200/80 bg-gradient-to-br from-emerald-50/60 to-teal-50/30`}>
+      <h2 className="flex items-start gap-2 font-display text-lg text-stone-800">
+        <span className="mt-0.5 text-xl">✨</span>
         Based on our chat, here's what Nova suggests adding to your profile:
       </h2>
 
@@ -161,9 +165,10 @@ export function SuggestionsCard({ session, skills: initialSkills, gaps, topics: 
       {gaps.length > 0 && (
         <section className="flex flex-col gap-2">
           <h3 className="text-sm font-semibold uppercase tracking-wide text-stone-500">Gaps identified</h3>
-          <ul className="flex flex-col gap-1 pl-5 text-sm text-stone-600">
+          <ul className="flex flex-col gap-1.5 text-sm text-stone-600">
             {gaps.map((gap, index) => (
-              <li key={index} className="list-disc">
+              <li key={index} className="flex items-start gap-2">
+                <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-amber-400" />
                 {gap}
               </li>
             ))}

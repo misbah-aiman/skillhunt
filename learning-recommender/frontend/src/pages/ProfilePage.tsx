@@ -116,8 +116,8 @@ export function ProfilePage({ session }: ProfilePageProps) {
         onBioChange={setBio}
       />
 
-      {error && <p className="text-sm text-rose-600">{error}</p>}
-      {message && <p className="text-sm text-emerald-700">{message}</p>}
+      {error && <p className="animate-scale-in text-sm text-rose-600">{error}</p>}
+      {message && <p className="animate-scale-in text-sm font-medium text-emerald-700">{message}</p>}
 
       <button type="submit" disabled={saving} className={`${primaryButtonClasses} self-start`}>
         {saving ? 'Saving...' : 'Save Profile'}
