@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import type { Resource, Topic } from '../lib/types';
 import { Spinner } from '../components/Spinner';
+import { LessonContent } from '../components/LessonContent';
 import { difficultyBadgeClasses, emptyStateClasses, plainTagClasses, statusBlockClasses, statusErrorClasses } from '../lib/ui';
 
 interface TopicDetailPageProps {
@@ -104,11 +105,13 @@ export function TopicDetailPage({ topicId, onBack }: TopicDetailPageProps) {
             </section>
           )}
 
+          <LessonContent topicId={topic.id} />
+
           <section>
-            <h2 className="mb-2 text-lg font-semibold text-stone-800">Resources</h2>
+            <h2 className="mb-2 text-lg font-semibold text-stone-800">Further Resources</h2>
             {resources.length === 0 ? (
               <div className={emptyStateClasses}>
-                <p>No resources yet for this topic.</p>
+                <p>No external resources yet for this topic.</p>
               </div>
             ) : (
               <ul className="flex flex-col gap-2">

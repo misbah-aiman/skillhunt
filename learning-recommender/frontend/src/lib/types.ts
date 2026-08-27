@@ -47,6 +47,38 @@ export interface Profile {
   updatedAt: string;
 }
 
+export interface KeyConcept {
+  title: string;
+  explanation: string;
+}
+
+export interface LessonExample {
+  title: string;
+  explanation: string;
+  code: string;
+  language: string;
+}
+
+export interface QuizQuestion {
+  question: string;
+  options: string[];
+  correctIndex: number;
+  explanation: string;
+}
+
+// Maps to the public.lessons table (see supabase/migrations). AI-generated
+// in-app learning material for a topic, generated once and cached.
+export interface Lesson {
+  id: string;
+  topicId: string;
+  summary: string;
+  keyConcepts: KeyConcept[];
+  examples: LessonExample[];
+  quiz: QuizQuestion[];
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface ChatMessage {
   role: "user" | "assistant";
   content: string;

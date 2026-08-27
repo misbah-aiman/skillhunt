@@ -230,6 +230,62 @@ export function toProgress(row: ProgressRow): Progress {
   };
 }
 
+export interface KeyConcept {
+  title: string;
+  explanation: string;
+}
+
+export interface LessonExample {
+  title: string;
+  explanation: string;
+  code: string;
+  language: string;
+}
+
+export interface QuizQuestion {
+  question: string;
+  options: string[];
+  correctIndex: number;
+  explanation: string;
+}
+
+// Maps to the public.lessons table (see supabase/migrations). AI-generated
+// in-app learning material for a topic, generated once and cached.
+export interface Lesson {
+  id: string;
+  topicId: string;
+  summary: string;
+  keyConcepts: KeyConcept[];
+  examples: LessonExample[];
+  quiz: QuizQuestion[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface LessonRow {
+  id: string;
+  topic_id: string;
+  summary: string;
+  key_concepts: KeyConcept[];
+  examples: LessonExample[];
+  quiz: QuizQuestion[];
+  created_at: string;
+  updated_at: string;
+}
+
+export function toLesson(row: LessonRow): Lesson {
+  return {
+    id: row.id,
+    topicId: row.topic_id,
+    summary: row.summary,
+    keyConcepts: row.key_concepts,
+    examples: row.examples,
+    quiz: row.quiz,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  };
+}
+
 function isSkill(value: unknown): value is Skill {
   return (
     typeof value === "object" &&

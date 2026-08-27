@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { getAllTopics, getTopicById } from "../lib/topicController.js";
+import { getOrGenerateLesson } from "../lib/lessonController.js";
 import type { Difficulty } from "../lib/types.js";
 
 const DIFFICULTIES: Difficulty[] = ["beginner", "intermediate", "advanced"];
@@ -46,4 +47,20 @@ topicsRouter.get("/:id", async (req, res) => {
   }
 
   res.json({ ok: true, topic, resources });
+});
+
+topicsRouter.get("/:id/lesson", async (req, res) => {
+  const { lesson, error, notFound } = await getOrGenerateLesson(req.params.id);
+
+  if (notFound) {
+    res.status(404).json({ ok: false, error: "Topic not found" });
+    return;
+  }
+
+  if (error) {
+    res.status(500).json({ ok: false, error });
+    return;
+  }
+
+  res.json({ ok: true, lesson });
 });
