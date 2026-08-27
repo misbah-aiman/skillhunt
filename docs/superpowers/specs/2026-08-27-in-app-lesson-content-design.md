@@ -103,15 +103,26 @@ codebase.
 
 ## API
 
-New route, added in both places:
+**Amended after implementation:** the design originally called for a
+nested `GET /:id/lesson` route as its own file on the Vercel side. That
+hit two real platform constraints: the Vercel Hobby plan caps a
+deployment at 12 Serverless Functions (this project's `frontend/api` was
+already at that limit), and Vercel's zero-config API routing for a
+non-Next.js project only matches a single dynamic path segment per
+function — a `[...id].ts` catch-all file 404'd at the platform routing
+layer rather than reaching the function. The shipped contract instead
+reuses the existing single-segment topic route with a `?lesson` query
+parameter, in both places:
 
-- `backend/src/routes/topics.ts`: `GET /:id/lesson` → calls
-  `getOrGenerateLesson`, returns `{ ok: true, lesson }` or
+- `backend/src/routes/topics.ts`: the existing `GET /:id` handler checks
+  `req.query.lesson`; when present it calls `getOrGenerateLesson` instead
+  of `getTopicById`, returning `{ ok: true, lesson }` or
   `{ ok: false, error }` (404 if the topic itself doesn't exist, 500 on
   generation/DB failure).
-- `frontend/api/topics/[id]/lesson.ts`: new Vercel Web Handler file,
-  same response shape, mirroring `frontend/api/topics/[id].ts`'s style
-  of reading the id from the URL path.
+- `frontend/api/topics/[id].ts`: the existing handler gets the same
+  `?lesson` branch, keeping the Vercel function count unchanged at 12.
+
+Frontend calls `GET /api/topics/:id?lesson=1`.
 
 ## Frontend
 

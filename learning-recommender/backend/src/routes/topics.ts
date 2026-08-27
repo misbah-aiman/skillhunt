@@ -33,7 +33,29 @@ topicsRouter.get("/", async (req, res) => {
   res.json({ ok: true, topics });
 });
 
+// The lesson is served off this same route via a ?lesson query param
+// rather than a nested /:id/lesson path — see frontend/api/topics/[id].ts
+// for why (Vercel's zero-config API routing for this project only matches
+// a single dynamic path segment per function, so both environments share
+// this query-param contract instead of diverging).
 topicsRouter.get("/:id", async (req, res) => {
+  if (req.query.lesson !== undefined) {
+    const { lesson, error, notFound } = await getOrGenerateLesson(req.params.id);
+
+    if (notFound) {
+      res.status(404).json({ ok: false, error: "Topic not found" });
+      return;
+    }
+
+    if (error) {
+      res.status(500).json({ ok: false, error });
+      return;
+    }
+
+    res.json({ ok: true, lesson });
+    return;
+  }
+
   const { topic, resources, error, notFound } = await getTopicById(req.params.id);
 
   if (notFound) {
@@ -47,20 +69,4 @@ topicsRouter.get("/:id", async (req, res) => {
   }
 
   res.json({ ok: true, topic, resources });
-});
-
-topicsRouter.get("/:id/lesson", async (req, res) => {
-  const { lesson, error, notFound } = await getOrGenerateLesson(req.params.id);
-
-  if (notFound) {
-    res.status(404).json({ ok: false, error: "Topic not found" });
-    return;
-  }
-
-  if (error) {
-    res.status(500).json({ ok: false, error });
-    return;
-  }
-
-  res.json({ ok: true, lesson });
 });

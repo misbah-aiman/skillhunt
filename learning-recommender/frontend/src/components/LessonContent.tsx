@@ -72,7 +72,7 @@ export function LessonContent({ topicId }: LessonContentProps) {
       setError(null);
 
       try {
-        const res = await fetch(`/api/topics/${topicId}/lesson`);
+        const res = await fetch(`/api/topics/${topicId}?lesson=1`);
         const json = await res.json();
 
         if (cancelled) return;

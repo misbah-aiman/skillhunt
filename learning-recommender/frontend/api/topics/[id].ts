@@ -1,25 +1,22 @@
 import { getTopicById } from "../_lib/topicController.js";
 import { getOrGenerateLesson } from "../_lib/lessonController.js";
 
-// Catch-all for /api/topics/:id and /api/topics/:id/lesson, combined into
-// one function rather than a separate file per route: the Hobby plan caps
-// deployments at 12 Serverless Functions, and this project's api/ directory
-// is already at that limit (see errorCode "exceeded_serverless_functions_
-// per_deployment" from the first attempt at a standalone lesson.ts file).
+// Vercel's zero-config API routing for non-Next projects only matches a
+// single dynamic path segment per file ([...id].ts catch-all routing was
+// tried and 404'd at the platform level here) — the lesson is served off
+// this same route via a query param instead of a nested path segment.
 export async function GET(request: Request) {
-  const segments = new URL(request.url).pathname.split("/").filter(Boolean);
-  // segments looks like ["api", "topics", ":id"] or ["api", "topics", ":id", "lesson"]
-  const topicsIndex = segments.indexOf("topics");
-  const rest = segments.slice(topicsIndex + 1);
-
-  const isLesson = rest.length === 2 && rest[1] === "lesson";
-  const id = isLesson ? rest[0] : rest[rest.length - 1];
+  const url = new URL(request.url);
+  // Read the id from the URL path directly rather than relying on how
+  // Vercel surfaces the [id] dynamic segment for Web Handler functions,
+  // since that isn't documented for this ("other framework") API style.
+  const id = url.pathname.split("/").filter(Boolean).pop();
 
   if (!id) {
     return Response.json({ ok: false, error: "Topic id is required" }, { status: 400 });
   }
 
-  if (isLesson) {
+  if (url.searchParams.has("lesson")) {
     const { lesson, error, notFound } = await getOrGenerateLesson(id);
 
     if (notFound) {
