@@ -125,6 +125,20 @@ export interface Progress {
   updatedAt: string;
 }
 
+// Returned by POST /api/progress (activity ping) — not backed by a
+// camelCase/snake_case row mapping like the other types here, since
+// these are computed summaries rather than direct table rows.
+export interface WeekDay {
+  date: string;
+  active: boolean;
+  isToday: boolean;
+}
+
+export interface ActivitySummary {
+  streak: number;
+  week: WeekDay[];
+}
+
 export type ConversationStatus = "in_progress" | "completed";
 
 // Maps to the public.conversations table (see supabase/migrations).

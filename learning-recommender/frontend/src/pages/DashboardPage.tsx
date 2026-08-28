@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react';
 import type { Session } from '@supabase/supabase-js';
-import type { Progress, RecommendedTopic } from '../lib/types';
+import type { ActivitySummary, Progress, RecommendedTopic } from '../lib/types';
+import { getLocalDateString } from '../lib/date';
 import { Spinner } from '../components/Spinner';
+import { StreakBar } from '../components/StreakBar';
 import { TopicDetailPage } from './TopicDetailPage';
 import {
   cardClasses,
@@ -21,6 +23,7 @@ interface DashboardPageProps {
 export function DashboardPage({ session, onNavigateToChat }: DashboardPageProps) {
   const [progress, setProgress] = useState<Progress[]>([]);
   const [recommendations, setRecommendations] = useState<RecommendedTopic[]>([]);
+  const [activity, setActivity] = useState<ActivitySummary | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedTopicId, setSelectedTopicId] = useState<string | null>(null);
@@ -32,8 +35,9 @@ export function DashboardPage({ session, onNavigateToChat }: DashboardPageProps)
       setLoading(true);
       setError(null);
 
+      const headers = { Authorization: `Bearer ${session.access_token}` };
+
       try {
-        const headers = { Authorization: `Bearer ${session.access_token}` };
         const [progressRes, recommendationsRes] = await Promise.all([
           fetch('/api/progress', { headers }),
           fetch('/api/recommendations', { headers }),
@@ -61,6 +65,23 @@ export function DashboardPage({ session, onNavigateToChat }: DashboardPageProps)
         setError(`Failed to reach the server: ${detail}`);
       } finally {
         if (!cancelled) setLoading(false);
+      }
+
+      // Records today's streak activity separately from the critical
+      // progress/recommendations load above — a failed ping just means
+      // the streak card doesn't render, not a broken dashboard.
+      try {
+        const res = await fetch('/api/progress', {
+          method: 'POST',
+          headers: { ...headers, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ localDate: getLocalDateString() }),
+        });
+        const json = await res.json();
+        if (!cancelled && json.ok) {
+          setActivity({ streak: json.streak, week: json.week });
+        }
+      } catch {
+        // Streak card just won't render this load; next visit retries.
       }
     }
 
@@ -117,6 +138,8 @@ export function DashboardPage({ session, onNavigateToChat }: DashboardPageProps)
               </div>
               <span className="text-sm text-stone-500">{percent}% of your learning path complete</span>
             </div>
+
+            {activity && <StreakBar activity={activity} />}
           </div>
 
           <section className="animate-fade-up mb-8" style={{ animationDelay: '0.1s' }}>

@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { generateLearningPath } from "../lib/recommendationController.js";
 import { getProgress, markComplete } from "../lib/progressController.js";
+import { isValidLocalDate, recordActivity } from "../lib/activityController.js";
 
 export const progressRouter = Router();
 
@@ -13,6 +14,27 @@ progressRouter.get("/", async (req, res) => {
   }
 
   res.json({ ok: true, progress });
+});
+
+// Records today's Dashboard-streak activity for the caller and returns
+// the resulting streak + week. `localDate` is the caller's local day
+// (YYYY-MM-DD) — see activityController for why the server trusts it.
+progressRouter.post("/", async (req, res) => {
+  const { localDate } = req.body ?? {};
+
+  if (!isValidLocalDate(localDate)) {
+    res.status(400).json({ ok: false, error: "localDate must be a YYYY-MM-DD string" });
+    return;
+  }
+
+  const { streak, week, error } = await recordActivity(req.user!.id, localDate);
+
+  if (error) {
+    res.status(500).json({ ok: false, error });
+    return;
+  }
+
+  res.json({ ok: true, streak, week });
 });
 
 progressRouter.post("/complete/:topicId", async (req, res) => {
