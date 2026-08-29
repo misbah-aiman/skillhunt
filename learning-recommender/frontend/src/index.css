@@ -1,15 +1,210 @@
 @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700;9..144,800&family=Figtree:wght@400;500;600;700;800&display=swap');
 @import 'tailwindcss';
 
+/* Pulls in the semantic color/font/radius/shadow aliases from
+   tailwind.config.ts (colors.primary, fontFamily.display, etc). The literal
+   token values below are the source of truth; the config just re-exposes
+   them under semantic names for tooling that reads theme(). */
+@config '../tailwind.config.ts';
+
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme {
+  /* ---------------------------------------------------------------------
+   * Type
+   * ------------------------------------------------------------------- */
   --font-display: 'Fraunces', ui-serif, Georgia, serif;
   --font-sans: 'Figtree', ui-sans-serif, system-ui, sans-serif;
+
+  --text-display-2xl: 3.5rem;
+  --text-display-2xl--line-height: 1.05;
+  --text-display-2xl--letter-spacing: -0.015em;
+  --text-display-xl: 2.75rem;
+  --text-display-xl--line-height: 1.08;
+  --text-display-xl--letter-spacing: -0.015em;
+  --text-display-lg: 2.25rem;
+  --text-display-lg--line-height: 1.1;
+  --text-display-lg--letter-spacing: -0.01em;
+  --text-display-md: 1.875rem;
+  --text-display-md--line-height: 1.15;
+  --text-display-md--letter-spacing: -0.01em;
+  --text-display-sm: 1.5rem;
+  --text-display-sm--line-height: 1.25;
+  --text-heading: 1.25rem;
+  --text-heading--line-height: 1.35;
+  --text-body-lg: 1.125rem;
+  --text-body-lg--line-height: 1.6;
+  --text-body: 1rem;
+  --text-body--line-height: 1.6;
+  --text-body-sm: 0.875rem;
+  --text-body-sm--line-height: 1.55;
+  --text-caption: 0.75rem;
+  --text-caption--line-height: 1.4;
+  --text-caption--letter-spacing: 0.01em;
+
+  /* ---------------------------------------------------------------------
+   * Color — brand ramps, hand-tuned in OKLCH (overrides Tailwind's stock
+   * emerald/teal/amber/rose/stone so every existing utility class in the
+   * app repaints with the brand palette; no component changes needed).
+   *
+   * primary   "jade"      — brand, CTAs, links, progress
+   * secondary "lagoon"    — complementary accent, chat/assistant surfaces
+   * accent    "sunburst"  — streaks, highlights, motivational moments
+   * danger    "coral"     — errors, destructive actions
+   * stone     warm neutral — text, borders, chrome
+   * ------------------------------------------------------------------- */
+  --color-emerald-50: oklch(97% 0.02 152);
+  --color-emerald-100: oklch(93% 0.045 152);
+  --color-emerald-200: oklch(86% 0.08 152);
+  --color-emerald-300: oklch(77% 0.12 152);
+  --color-emerald-400: oklch(67% 0.15 152);
+  --color-emerald-500: oklch(58% 0.155 152);
+  --color-emerald-600: oklch(50% 0.145 152);
+  --color-emerald-700: oklch(43% 0.125 152);
+  --color-emerald-800: oklch(37% 0.1 152);
+  --color-emerald-900: oklch(31% 0.075 152);
+  --color-emerald-950: oklch(20% 0.045 152);
+
+  --color-teal-50: oklch(97% 0.02 200);
+  --color-teal-100: oklch(93% 0.04 200);
+  --color-teal-200: oklch(86% 0.07 200);
+  --color-teal-300: oklch(76% 0.09 200);
+  --color-teal-400: oklch(65% 0.11 200);
+  --color-teal-500: oklch(55% 0.115 200);
+  --color-teal-600: oklch(47% 0.105 200);
+  --color-teal-700: oklch(41% 0.09 200);
+  --color-teal-800: oklch(35% 0.075 200);
+  --color-teal-900: oklch(29% 0.06 200);
+  --color-teal-950: oklch(19% 0.04 200);
+
+  --color-amber-50: oklch(97% 0.03 60);
+  --color-amber-100: oklch(93% 0.06 60);
+  --color-amber-200: oklch(87% 0.1 60);
+  --color-amber-300: oklch(80% 0.14 55);
+  --color-amber-400: oklch(73% 0.16 50);
+  --color-amber-500: oklch(68% 0.17 45);
+  --color-amber-600: oklch(59% 0.17 40);
+  --color-amber-700: oklch(50% 0.15 35);
+  --color-amber-800: oklch(42% 0.12 35);
+  --color-amber-900: oklch(35% 0.09 35);
+  --color-amber-950: oklch(22% 0.06 35);
+
+  --color-rose-50: oklch(97% 0.02 15);
+  --color-rose-100: oklch(93% 0.045 15);
+  --color-rose-200: oklch(86% 0.08 15);
+  --color-rose-300: oklch(76% 0.12 15);
+  --color-rose-400: oklch(66% 0.17 18);
+  --color-rose-500: oklch(58% 0.19 20);
+  --color-rose-600: oklch(51% 0.19 22);
+  --color-rose-700: oklch(44% 0.16 22);
+  --color-rose-800: oklch(38% 0.13 20);
+  --color-rose-900: oklch(32% 0.1 18);
+  --color-rose-950: oklch(21% 0.06 18);
+
+  --color-stone-50: oklch(98% 0.004 60);
+  --color-stone-100: oklch(96% 0.006 60);
+  --color-stone-200: oklch(91% 0.008 60);
+  --color-stone-300: oklch(83% 0.01 60);
+  --color-stone-400: oklch(68% 0.012 60);
+  --color-stone-500: oklch(56% 0.012 60);
+  --color-stone-600: oklch(46% 0.012 60);
+  --color-stone-700: oklch(38% 0.01 60);
+  --color-stone-800: oklch(27% 0.008 60);
+  --color-stone-900: oklch(19% 0.006 60);
+  --color-stone-950: oklch(12% 0.004 60);
+
+  /* Semantic aliases — light mode defaults. Redefined per-mode below. */
+  --color-primary-50: var(--color-emerald-50);
+  --color-primary-100: var(--color-emerald-100);
+  --color-primary-200: var(--color-emerald-200);
+  --color-primary-300: var(--color-emerald-300);
+  --color-primary-400: var(--color-emerald-400);
+  --color-primary-500: var(--color-emerald-500);
+  --color-primary-600: var(--color-emerald-600);
+  --color-primary-700: var(--color-emerald-700);
+  --color-primary-800: var(--color-emerald-800);
+  --color-primary-900: var(--color-emerald-900);
+  --color-primary-950: var(--color-emerald-950);
+
+  --color-secondary-50: var(--color-teal-50);
+  --color-secondary-100: var(--color-teal-100);
+  --color-secondary-200: var(--color-teal-200);
+  --color-secondary-300: var(--color-teal-300);
+  --color-secondary-400: var(--color-teal-400);
+  --color-secondary-500: var(--color-teal-500);
+  --color-secondary-600: var(--color-teal-600);
+  --color-secondary-700: var(--color-teal-700);
+  --color-secondary-800: var(--color-teal-800);
+  --color-secondary-900: var(--color-teal-900);
+  --color-secondary-950: var(--color-teal-950);
+
+  --color-accent-50: var(--color-amber-50);
+  --color-accent-100: var(--color-amber-100);
+  --color-accent-200: var(--color-amber-200);
+  --color-accent-300: var(--color-amber-300);
+  --color-accent-400: var(--color-amber-400);
+  --color-accent-500: var(--color-amber-500);
+  --color-accent-600: var(--color-amber-600);
+  --color-accent-700: var(--color-amber-700);
+  --color-accent-800: var(--color-amber-800);
+  --color-accent-900: var(--color-amber-900);
+  --color-accent-950: var(--color-amber-950);
+
+  --color-danger-50: var(--color-rose-50);
+  --color-danger-100: var(--color-rose-100);
+  --color-danger-200: var(--color-rose-200);
+  --color-danger-300: var(--color-rose-300);
+  --color-danger-400: var(--color-rose-400);
+  --color-danger-500: var(--color-rose-500);
+  --color-danger-600: var(--color-rose-600);
+  --color-danger-700: var(--color-rose-700);
+  --color-danger-800: var(--color-rose-800);
+  --color-danger-900: var(--color-rose-900);
+  --color-danger-950: var(--color-rose-950);
+
+  --color-primary: var(--color-primary-600);
+  --color-secondary: var(--color-secondary-600);
+  --color-accent: var(--color-accent-500);
+  --color-danger: var(--color-danger-600);
+
+  --color-background: oklch(98.5% 0.006 60);
+  --color-surface: oklch(100% 0 0);
+  --color-surface-hover: var(--color-stone-50);
+  --color-surface-raised: oklch(100% 0 0);
+  --color-border: var(--color-stone-200);
+  --color-border-strong: var(--color-stone-300);
+  --color-text-primary: var(--color-stone-800);
+  --color-text-secondary: var(--color-stone-600);
+  --color-text-muted: var(--color-stone-500);
+  --color-text-inverse: oklch(100% 0 0);
+
+  /* ---------------------------------------------------------------------
+   * Radius & shadow conventions
+   *   control (rounded-control) — inputs, buttons        → 0.75rem
+   *   card    (rounded-card)    — cards, panels, modals   → 1rem
+   *   pills / avatars use the built-in `rounded-full`
+   * ------------------------------------------------------------------- */
+  --radius-control: 0.75rem;
+  --radius-card: 1rem;
+
+  --shadow-control: 0 1px 2px rgba(0, 0, 0, 0.04);
+  --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.03), 0 10px 28px -14px rgba(41, 37, 36, 0.18);
+  --shadow-elevated: 0 4px 8px rgba(0, 0, 0, 0.04), 0 20px 40px -16px rgba(41, 37, 36, 0.22);
+  --shadow-glow-primary: 0 1px 2px rgba(0, 0, 0, 0.08), 0 8px 16px -6px oklch(58% 0.155 152 / 0.45);
+
+  /* ---------------------------------------------------------------------
+   * Motion
+   * ------------------------------------------------------------------- */
   --animate-fade-up: fade-up 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
   --animate-scale-in: scale-in 0.25s cubic-bezier(0.16, 1, 0.3, 1) both;
   --animate-pulse-ring: pulse-ring 1.4s ease-in-out infinite;
   --animate-float: float 6s ease-in-out infinite;
   --animate-shimmer: shimmer 2.2s linear infinite;
 }
+
+/* Spacing follows Tailwind's default 4px scale — no overrides needed.
+ * Convention: 1.5–2 for tight control padding, 4 for icon/text gaps,
+ * 5 for card padding, 6–8 for stacked sections, 12–16 for page rhythm. */
 
 @keyframes fade-up {
   from {
@@ -36,10 +231,10 @@
 @keyframes pulse-ring {
   0%,
   100% {
-    box-shadow: 0 0 0 6px var(--pulse-ring-color, rgb(5 150 105 / 0.15));
+    box-shadow: 0 0 0 6px var(--pulse-ring-color, oklch(58% 0.155 152 / 0.15));
   }
   50% {
-    box-shadow: 0 0 0 12px var(--pulse-ring-color, rgb(5 150 105 / 0.15));
+    box-shadow: 0 0 0 12px var(--pulse-ring-color, oklch(58% 0.155 152 / 0.15));
   }
 }
 
@@ -62,18 +257,47 @@
   }
 }
 
+/* ---------------------------------------------------------------------
+ * Dark mode — same jade/lagoon/sunburst identity, remapped for a dark,
+ * slightly warm-tinted surface instead of a flat neutral gray.
+ * ------------------------------------------------------------------- */
+.dark {
+  --color-background: oklch(16% 0.012 155);
+  --color-surface: oklch(21% 0.014 155);
+  --color-surface-hover: oklch(25% 0.016 155);
+  --color-surface-raised: oklch(24% 0.015 155);
+  --color-border: oklch(30% 0.016 155);
+  --color-border-strong: oklch(38% 0.018 155);
+
+  --color-text-primary: oklch(95% 0.006 60);
+  --color-text-secondary: oklch(78% 0.008 60);
+  --color-text-muted: oklch(60% 0.01 60);
+  --color-text-inverse: var(--color-stone-900);
+
+  /* Shift brand colors a step lighter so they hold contrast on dark surfaces */
+  --color-primary: var(--color-primary-400);
+  --color-secondary: var(--color-secondary-400);
+  --color-accent: var(--color-accent-400);
+  --color-danger: var(--color-danger-400);
+
+  --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.2), 0 10px 28px -14px rgba(0, 0, 0, 0.5);
+  --shadow-elevated: 0 4px 8px rgba(0, 0, 0, 0.25), 0 20px 40px -16px rgba(0, 0, 0, 0.6);
+  --shadow-glow-primary: 0 1px 2px rgba(0, 0, 0, 0.3), 0 8px 16px -6px oklch(67% 0.15 152 / 0.4);
+}
+
 html {
   font-family: var(--font-sans);
 }
 
 body {
-  @apply text-stone-800;
-  background-color: #fbfaf8;
+  @apply text-text-primary;
+  background-color: var(--color-background);
   background-image:
-    radial-gradient(circle at 12% 8%, rgb(5 150 105 / 0.09), transparent 42%),
-    radial-gradient(circle at 88% 4%, rgb(20 184 166 / 0.08), transparent 38%),
-    radial-gradient(circle at 82% 92%, rgb(245 158 11 / 0.07), transparent 42%);
+    radial-gradient(circle at 12% 8%, oklch(58% 0.155 152 / 0.09), transparent 42%),
+    radial-gradient(circle at 88% 4%, oklch(55% 0.115 200 / 0.08), transparent 38%),
+    radial-gradient(circle at 82% 92%, oklch(68% 0.17 45 / 0.07), transparent 42%);
   background-attachment: fixed;
+  transition: background-color 0.3s ease;
 }
 
 h1,
@@ -84,25 +308,30 @@ h3 {
 }
 
 .text-gradient-brand {
-  background-image: linear-gradient(120deg, #047857, #0d9488 55%, #0891b2);
+  background-image: linear-gradient(
+    120deg,
+    var(--color-primary-700),
+    var(--color-secondary-600) 55%,
+    var(--color-teal-500)
+  );
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
 }
 
 ::selection {
-  background-color: rgb(5 150 105 / 0.2);
+  background-color: oklch(58% 0.155 152 / 0.2);
 }
 
 *:focus-visible {
-  outline: 2px solid rgb(5 150 105 / 0.5);
+  outline: 2px solid oklch(58% 0.155 152 / 0.5);
   outline-offset: 2px;
 }
 
 /* Firefox */
 * {
   scrollbar-width: thin;
-  scrollbar-color: rgb(120 113 108 / 0.35) transparent;
+  scrollbar-color: oklch(46% 0.012 60 / 0.35) transparent;
 }
 
 *::-webkit-scrollbar {
@@ -111,12 +340,12 @@ h3 {
 }
 
 *::-webkit-scrollbar-thumb {
-  background-color: rgb(120 113 108 / 0.3);
+  background-color: oklch(46% 0.012 60 / 0.3);
   border-radius: 9999px;
 }
 
 *::-webkit-scrollbar-thumb:hover {
-  background-color: rgb(120 113 108 / 0.5);
+  background-color: oklch(46% 0.012 60 / 0.5);
 }
 
 @media (prefers-reduced-motion: reduce) {
