@@ -102,6 +102,10 @@ function emptyResult(error: string): ChatResult {
   return { reply: null, isComplete: null, suggestions: null, error };
 }
 
+function isRetryable503(error: unknown): boolean {
+  return error instanceof Error && error.message.includes("503");
+}
+
 // Best-effort: a save failure shouldn't break the conversation the user is
 // actively having, so this logs rather than surfacing an error turn-to-turn.
 async function saveMessage(userId: string, role: "user" | "assistant", message: string): Promise<void> {
@@ -118,13 +122,24 @@ export async function sendChatMessage(userId: string, messages: ChatMessage[]): 
     await saveMessage(userId, "user", lastMessage.content);
   }
 
+  const request = {
+    contents: messages.map((message) => ({
+      role: message.role === "assistant" ? "model" : "user",
+      parts: [{ text: message.content }],
+    })),
+  };
+
   try {
-    const result = await model.generateContent({
-      contents: messages.map((message) => ({
-        role: message.role === "assistant" ? "model" : "user",
-        parts: [{ text: message.content }],
-      })),
-    });
+    // One retry on a transient overload — mirrors lessonController's
+    // getOrGenerateLesson, since a live chat turn shouldn't dead-end on a
+    // momentary Gemini blip any more than a lesson generation should.
+    let result;
+    try {
+      result = await model.generateContent(request);
+    } catch (error) {
+      if (!isRetryable503(error)) throw error;
+      result = await model.generateContent(request);
+    }
 
     const text = result.response.text();
 
