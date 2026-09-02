@@ -49,8 +49,17 @@ export function ProfileSetup({ session, onComplete }: ProfileSetupProps) {
   }
 
   return (
-    <div className="flex w-full justify-center">
-      <form className="animate-fade-up mx-auto flex w-full max-w-lg flex-col gap-6 text-left" onSubmit={handleSubmit}>
+    <div
+      className="relative flex min-h-screen w-full justify-center overflow-x-hidden px-4 py-8 sm:px-8 sm:py-12"
+      style={{ paddingBottom: 'calc(2rem + env(safe-area-inset-bottom, 0px))' }}
+    >
+      <div className="pointer-events-none absolute -top-24 -left-24 h-72 w-72 rounded-full bg-emerald-300/20 blur-3xl" />
+      <div className="pointer-events-none absolute -right-24 -bottom-24 h-72 w-72 rounded-full bg-teal-300/20 blur-3xl" />
+
+      <form
+        className="animate-fade-up relative flex w-full min-w-0 max-w-lg flex-col gap-6 self-start rounded-2xl border border-stone-200/80 bg-white p-5 text-left shadow-[0_1px_2px_rgba(0,0,0,0.04),0_24px_48px_-16px_rgba(41,37,36,0.22)] sm:p-8"
+        onSubmit={handleSubmit}
+      >
         <div>
           <span className="animate-float mb-3 flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 text-xl shadow-[0_6px_14px_-4px_rgba(5,150,105,0.55)]">
             🎯
@@ -72,7 +81,7 @@ export function ProfileSetup({ session, onComplete }: ProfileSetupProps) {
 
         {error && <p className="animate-scale-in text-sm text-rose-600">{error}</p>}
 
-        <button type="submit" disabled={saving} className={`${primaryButtonClasses} self-start`}>
+        <button type="submit" disabled={saving} className={`${primaryButtonClasses} w-full sm:w-auto sm:self-start`}>
           {saving ? 'Saving...' : 'Finish Setup'}
         </button>
       </form>

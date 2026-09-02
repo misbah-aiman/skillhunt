@@ -73,7 +73,7 @@ export function ProfileFields({
     <>
       <section className="flex flex-col gap-2 border-b border-stone-200/70 pb-6">
         <h2 className="font-display text-lg text-stone-800">Skills</h2>
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
           <input
             type="text"
             placeholder="Skill name"
@@ -85,7 +85,7 @@ export function ProfileFields({
                 addSkill();
               }
             }}
-            className={`${inputClasses} min-w-36 flex-1`}
+            className={`${inputClasses} w-full sm:min-w-36 sm:flex-1`}
           />
           <input
             type="text"
@@ -98,9 +98,9 @@ export function ProfileFields({
                 addSkill();
               }
             }}
-            className={`${inputClasses} min-w-36 flex-1`}
+            className={`${inputClasses} w-full sm:min-w-36 sm:flex-1`}
           />
-          <button type="button" onClick={addSkill} className={secondaryButtonClasses}>
+          <button type="button" onClick={addSkill} className={`${secondaryButtonClasses} w-full sm:w-auto`}>
             Add
           </button>
         </div>
