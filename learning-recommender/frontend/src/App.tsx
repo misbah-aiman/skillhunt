@@ -93,7 +93,7 @@ function App() {
             {view === 'dashboard' && <DashboardPage session={session} onNavigateToChat={openChat} />}
             {view === 'call' && <CallPage session={session} onEndCall={() => setView('dashboard')} />}
             {view === 'path' && <LearningPathPage session={session} onNavigateToChat={openChat} />}
-            {view === 'profile' && <ProfilePage session={session} />}
+            {view === 'profile' && <ProfilePage onNavigateToChat={openChat} />}
           </div>
         </div>
 
