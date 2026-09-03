@@ -1,12 +1,25 @@
 import { useEffect, useState } from 'react';
+import type { Session } from '@supabase/supabase-js';
 import type { Resource, Topic } from '../lib/types';
 import { Spinner } from '../components/Spinner';
 import { LessonContent } from '../components/LessonContent';
-import { difficultyBadgeClasses, emptyStateClasses, plainTagClasses, statusBlockClasses, statusErrorClasses } from '../lib/ui';
+import {
+  cardClasses,
+  difficultyBadgeClasses,
+  emptyStateClasses,
+  plainTagClasses,
+  primaryButtonClasses,
+  statusBlockClasses,
+  statusErrorClasses,
+} from '../lib/ui';
+import { CheckIcon } from '../components/icons';
 
 interface TopicDetailPageProps {
   topicId: string;
+  session: Session;
   onBack: () => void;
+  // Called once the topic is successfully marked complete on the server.
+  onComplete?: () => void;
 }
 
 const RESOURCE_TYPE_LABEL: Record<Resource['type'], string> = {
@@ -15,11 +28,14 @@ const RESOURCE_TYPE_LABEL: Record<Resource['type'], string> = {
   course: 'Course',
 };
 
-export function TopicDetailPage({ topicId, onBack }: TopicDetailPageProps) {
+export function TopicDetailPage({ topicId, session, onBack, onComplete }: TopicDetailPageProps) {
   const [topic, setTopic] = useState<Topic | null>(null);
   const [resources, setResources] = useState<Resource[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [completing, setCompleting] = useState(false);
+  const [completeError, setCompleteError] = useState<string | null>(null);
+  const [completed, setCompleted] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -56,6 +72,37 @@ export function TopicDetailPage({ topicId, onBack }: TopicDetailPageProps) {
       cancelled = true;
     };
   }, [topicId]);
+
+  useEffect(() => {
+    setCompleted(false);
+    setCompleteError(null);
+  }, [topicId]);
+
+  async function handleComplete() {
+    setCompleting(true);
+    setCompleteError(null);
+
+    try {
+      const res = await fetch(`/api/progress/complete/${topicId}`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${session.access_token}` },
+      });
+      const json = await res.json();
+
+      if (!json.ok) {
+        setCompleteError(json.error ?? 'Failed to mark topic complete.');
+        return;
+      }
+
+      setCompleted(true);
+      onComplete?.();
+    } catch (err) {
+      const detail = err instanceof Error ? err.message : String(err);
+      setCompleteError(`Failed to reach the server: ${detail}`);
+    } finally {
+      setCompleting(false);
+    }
+  }
 
   return (
     <div className="mx-auto flex w-full max-w-2xl animate-fade-up flex-col gap-4 text-left">
@@ -106,6 +153,22 @@ export function TopicDetailPage({ topicId, onBack }: TopicDetailPageProps) {
           )}
 
           <LessonContent topicId={topic.id} />
+
+          <div className={`${cardClasses} flex flex-wrap items-center justify-between gap-3`}>
+            {completed ? (
+              <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-emerald-600">
+                <CheckIcon className="h-4 w-4" /> Marked complete!
+              </span>
+            ) : (
+              <>
+                <p className="text-sm text-stone-600">Done with this topic?</p>
+                <button type="button" onClick={handleComplete} disabled={completing} className={primaryButtonClasses}>
+                  {completing ? 'Marking complete...' : 'Mark as Complete'}
+                </button>
+              </>
+            )}
+            {completeError && <p className="w-full text-sm text-rose-600">{completeError}</p>}
+          </div>
 
           <section>
             <h2 className="mb-2 text-lg font-semibold text-stone-800">Further Resources</h2>

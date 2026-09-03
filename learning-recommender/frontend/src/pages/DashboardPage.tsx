@@ -27,6 +27,7 @@ export function DashboardPage({ session, onNavigateToChat }: DashboardPageProps)
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedTopicId, setSelectedTopicId] = useState<string | null>(null);
+  const [reloadKey, setReloadKey] = useState(0);
 
   useEffect(() => {
     let cancelled = false;
@@ -90,10 +91,17 @@ export function DashboardPage({ session, onNavigateToChat }: DashboardPageProps)
     return () => {
       cancelled = true;
     };
-  }, [session.access_token]);
+  }, [session.access_token, reloadKey]);
 
   if (selectedTopicId) {
-    return <TopicDetailPage topicId={selectedTopicId} onBack={() => setSelectedTopicId(null)} />;
+    return (
+      <TopicDetailPage
+        topicId={selectedTopicId}
+        session={session}
+        onBack={() => setSelectedTopicId(null)}
+        onComplete={() => setReloadKey((key) => key + 1)}
+      />
+    );
   }
 
   const completedCount = progress.filter((p) => p.status === 'completed').length;

@@ -92,7 +92,7 @@ function App() {
           <div className="animate-fade-up" key={view}>
             {view === 'dashboard' && <DashboardPage session={session} onNavigateToChat={openChat} />}
             {view === 'call' && <CallPage session={session} onEndCall={() => setView('dashboard')} />}
-            {view === 'path' && <LearningPathPage />}
+            {view === 'path' && <LearningPathPage session={session} />}
             {view === 'profile' && <ProfilePage onNavigateToChat={openChat} />}
           </div>
         </div>
