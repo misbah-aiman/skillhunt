@@ -200,6 +200,8 @@
   --animate-pulse-ring: pulse-ring 1.4s ease-in-out infinite;
   --animate-float: float 6s ease-in-out infinite;
   --animate-shimmer: shimmer 2.2s linear infinite;
+  --animate-gradient-pan: gradient-pan 6s ease-in-out infinite;
+  --animate-typing-dot: typing-dot 1.2s ease-in-out infinite;
 }
 
 /* Spacing follows Tailwind's default 4px scale — no overrides needed.
@@ -254,6 +256,34 @@
   }
   100% {
     background-position: 200% 0;
+  }
+}
+
+/* Drifts a multi-stop gradient back and forth across an element that has been
+   given an oversized background-size (e.g. `bg-[length:200%_200%]`), so a
+   gradient fill reads as alive without anything moving on screen. */
+@keyframes gradient-pan {
+  0%,
+  100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+/* One dot of a three-dot typing indicator; the dots share this animation and
+   are offset from each other with per-dot animation-delay. */
+@keyframes typing-dot {
+  0%,
+  60%,
+  100% {
+    opacity: 0.3;
+    transform: translateY(0);
+  }
+  30% {
+    opacity: 1;
+    transform: translateY(-3px);
   }
 }
 

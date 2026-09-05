@@ -4,6 +4,7 @@ import { supabase } from './lib/supabaseClient';
 import { Login } from './pages/Login';
 import { ProfilePage } from './pages/ProfilePage';
 import { CallPage } from './pages/CallPage';
+import { ChatPage } from './pages/ChatPage';
 import { LearningPathPage } from './pages/LearningPathPage';
 import { DashboardPage } from './pages/DashboardPage';
 import { NavBar, type View } from './components/NavBar';
@@ -91,13 +92,14 @@ function App() {
           <NavBar view={view} onNavigate={setView} onSignOut={() => supabase.auth.signOut()} />
           <div className="animate-fade-up" key={view}>
             {view === 'dashboard' && <DashboardPage session={session} onNavigateToChat={openChat} />}
+            {view === 'chat' && <ChatPage session={session} />}
             {view === 'call' && <CallPage session={session} onEndCall={() => setView('dashboard')} />}
             {view === 'path' && <LearningPathPage session={session} />}
             {view === 'profile' && <ProfilePage onNavigateToChat={openChat} />}
           </div>
         </div>
 
-        {view !== 'call' && (
+        {view !== 'call' && view !== 'chat' && (
           <ChatWidget session={session} open={chatOpen} onOpenChange={setChatOpen} onOpenCall={openCall} />
         )}
       </OnboardedRoute>

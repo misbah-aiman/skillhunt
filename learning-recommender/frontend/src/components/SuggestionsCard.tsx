@@ -9,12 +9,20 @@ interface SuggestionsCardProps {
   skills: string[];
   gaps: string[];
   topics: string[];
+  /** Persona name to credit in the card heading. */
+  assistantName?: string;
 }
 
-// Lets the user review and edit Nova's findings before they're written to
+// Lets the user review and edit Alex's findings before they're written to
 // the profile. gaps has no profile field to land in, so it's shown as
 // read-only context rather than being editable alongside skills/topics.
-export function SuggestionsCard({ session, skills: initialSkills, gaps, topics: initialTopics }: SuggestionsCardProps) {
+export function SuggestionsCard({
+  session,
+  skills: initialSkills,
+  gaps,
+  topics: initialTopics,
+  assistantName = 'Alex',
+}: SuggestionsCardProps) {
   const [skills, setSkills] = useState<string[]>(initialSkills);
   const [topics, setTopics] = useState<string[]>(initialTopics);
   const [skillInput, setSkillInput] = useState('');
@@ -93,7 +101,7 @@ export function SuggestionsCard({ session, skills: initialSkills, gaps, topics: 
     <div className={`${cardClasses} animate-fade-up mt-6 flex flex-col gap-4 border-emerald-200/80 bg-gradient-to-br from-emerald-50/60 to-teal-50/30`}>
       <h2 className="flex items-start gap-2 font-display text-lg text-stone-800">
         <span className="mt-0.5 text-xl">✨</span>
-        Based on our chat, here's what Nova suggests adding to your profile:
+        Based on our chat, here's what {assistantName} suggests adding to your profile:
       </h2>
 
       <section className="flex flex-col gap-2">

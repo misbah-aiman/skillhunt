@@ -1,4 +1,4 @@
-export type View = 'dashboard' | 'path' | 'call' | 'profile';
+export type View = 'dashboard' | 'path' | 'chat' | 'call' | 'profile';
 
 interface NavBarProps {
   view: View;
@@ -9,6 +9,7 @@ interface NavBarProps {
 const LINKS: { view: View; label: string; icon: string }[] = [
   { view: 'dashboard', label: 'Dashboard', icon: '🏠' },
   { view: 'path', label: 'Learning Path', icon: '🗺️' },
+  { view: 'chat', label: 'Chat', icon: '💬' },
   { view: 'profile', label: 'Profile', icon: '👤' },
 ];
 
