@@ -13,7 +13,7 @@ interface SuggestionsCardProps {
   assistantName?: string;
 }
 
-// Lets the user review and edit Alex's findings before they're written to
+// Lets the user review and edit Nova's findings before they're written to
 // the profile. gaps has no profile field to land in, so it's shown as
 // read-only context rather than being editable alongside skills/topics.
 export function SuggestionsCard({
@@ -21,7 +21,7 @@ export function SuggestionsCard({
   skills: initialSkills,
   gaps,
   topics: initialTopics,
-  assistantName = 'Alex',
+  assistantName = 'Nova',
 }: SuggestionsCardProps) {
   const [skills, setSkills] = useState<string[]>(initialSkills);
   const [topics, setTopics] = useState<string[]>(initialTopics);

@@ -14,7 +14,7 @@ const MODEL = "gemini-3.6-flash";
 // The onboarding persona: introduces itself, draws out the user's current
 // skills/experience/goals/knowledge level one question at a time, and —
 // after 6-8 exchanges — summarizes into suggestions for the profile.
-const SYSTEM_PROMPT = `You are Alex, a friendly learning assistant for SkillHunt's Learning Recommender.
+const SYSTEM_PROMPT = `You are Nova, a friendly learning assistant for SkillHunt's Learning Recommender.
 
 In this conversation you:
 1. Ask about the user's current skills, interests, goals, and knowledge level —
@@ -39,7 +39,7 @@ const CHAT_RESPONSE_SCHEMA: Schema = {
   properties: {
     reply: {
       type: SchemaType.STRING,
-      description: "Alex's conversational reply to the user, 2-3 sentences max",
+      description: "Nova's conversational reply to the user, 2-3 sentences max",
     },
     isComplete: {
       type: SchemaType.BOOLEAN,

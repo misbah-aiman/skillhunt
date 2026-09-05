@@ -5,7 +5,7 @@ import { SuggestionsCard } from '../components/SuggestionsCard';
 import { PhoneIcon, SendIcon } from '../components/icons';
 import { chatBubbleClasses, secondaryButtonClasses } from '../lib/ui';
 
-const ASSISTANT_NAME = 'Alex';
+const ASSISTANT_NAME = 'Nova';
 
 const GREETING = `Hi, I'm ${ASSISTANT_NAME}! I'm here to learn about your skills and goals so I can recommend what to learn next. What are you working on?`;
 
@@ -68,7 +68,7 @@ export function ChatPage({ session, onOpenCall }: ChatPageProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const composerRef = useRef<HTMLTextAreaElement>(null);
 
-  // Alex populates suggestions on every turn, so ending the chat by hand is
+  // Nova populates suggestions on every turn, so ending the chat by hand is
   // just as valid a way to see the card as waiting for isComplete.
   const showSuggestions = ended || isComplete;
   const canSend = input.trim().length > 0 && !sending && !ended;
