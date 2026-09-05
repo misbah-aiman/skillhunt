@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, type FormEvent, type KeyboardEvent } from 
 import type { Session } from '@supabase/supabase-js';
 import type { ChatMessage } from '../lib/types';
 import { SuggestionsCard } from '../components/SuggestionsCard';
-import { SendIcon } from '../components/icons';
+import { PhoneIcon, SendIcon } from '../components/icons';
 import { chatBubbleClasses, secondaryButtonClasses } from '../lib/ui';
 
 const ASSISTANT_NAME = 'Alex';
@@ -21,6 +21,7 @@ const MAX_COMPOSER_HEIGHT = 140;
 
 interface ChatPageProps {
   session: Session;
+  onOpenCall?: () => void;
 }
 
 interface AvatarProps {
@@ -53,7 +54,7 @@ function TypingDots() {
   );
 }
 
-export function ChatPage({ session }: ChatPageProps) {
+export function ChatPage({ session, onOpenCall }: ChatPageProps) {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState('');
   const [sending, setSending] = useState(false);
@@ -183,20 +184,33 @@ export function ChatPage({ session }: ChatPageProps) {
           </div>
         </div>
 
-        {ended ? (
-          <button type="button" onClick={handleReset} className={`${secondaryButtonClasses} shrink-0 px-3`}>
-            New chat
-          </button>
-        ) : (
-          <button
-            type="button"
-            onClick={() => setEnded(true)}
-            disabled={messages.length === 0 || sending}
-            className={`${secondaryButtonClasses} shrink-0 px-3`}
-          >
-            End Chat
-          </button>
-        )}
+        <div className="flex shrink-0 items-center gap-2">
+          {onOpenCall && !ended && (
+            <button
+              type="button"
+              onClick={onOpenCall}
+              aria-label={`Call ${ASSISTANT_NAME}`}
+              title={`Call ${ASSISTANT_NAME}`}
+              className="flex h-11 w-11 items-center justify-center rounded-full text-stone-400 transition-colors hover:bg-emerald-100 hover:text-emerald-700"
+            >
+              <PhoneIcon className="h-4.5 w-4.5" />
+            </button>
+          )}
+          {ended ? (
+            <button type="button" onClick={handleReset} className={`${secondaryButtonClasses} px-3`}>
+              New chat
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={() => setEnded(true)}
+              disabled={messages.length === 0 || sending}
+              className={`${secondaryButtonClasses} px-3`}
+            >
+              End Chat
+            </button>
+          )}
+        </div>
       </header>
 
       <div

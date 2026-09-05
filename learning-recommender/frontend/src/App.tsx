@@ -10,14 +10,13 @@ import { DashboardPage } from './pages/DashboardPage';
 import { NavBar, type View } from './components/NavBar';
 import { OnboardedRoute } from './components/OnboardedRoute';
 import { Spinner } from './components/Spinner';
-import { ChatWidget } from './components/ChatWidget';
+import { ChatLauncher } from './components/ChatLauncher';
 
 function App() {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const [view, setView] = useState<View>('dashboard');
   const [isOnboarded, setIsOnboarded] = useState<boolean | null>(null);
-  const [chatOpen, setChatOpen] = useState(false);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
@@ -83,7 +82,7 @@ function App() {
       );
     }
 
-    const openChat = () => setChatOpen(true);
+    const openChat = () => setView('chat');
     const openCall = () => setView('call');
 
     return (
@@ -92,16 +91,14 @@ function App() {
           <NavBar view={view} onNavigate={setView} onSignOut={() => supabase.auth.signOut()} />
           <div className="animate-fade-up" key={view}>
             {view === 'dashboard' && <DashboardPage session={session} onNavigateToChat={openChat} />}
-            {view === 'chat' && <ChatPage session={session} />}
+            {view === 'chat' && <ChatPage session={session} onOpenCall={openCall} />}
             {view === 'call' && <CallPage session={session} onEndCall={() => setView('dashboard')} />}
             {view === 'path' && <LearningPathPage session={session} />}
             {view === 'profile' && <ProfilePage onNavigateToChat={openChat} />}
           </div>
         </div>
 
-        {view !== 'call' && view !== 'chat' && (
-          <ChatWidget session={session} open={chatOpen} onOpenChange={setChatOpen} onOpenCall={openCall} />
-        )}
+        {view !== 'call' && view !== 'chat' && <ChatLauncher onOpenChat={openChat} />}
       </OnboardedRoute>
     );
   }
