@@ -9,7 +9,7 @@ interface NavBarProps {
 const LINKS: { view: View; label: string; icon: string }[] = [
   { view: 'dashboard', label: 'Dashboard', icon: '🏠' },
   { view: 'path', label: 'Learning Path', icon: '🗺️' },
-  { view: 'chat', label: 'Chat', icon: '💬' },
+  { view: 'chat', label: 'Nova', icon: '💬' },
   { view: 'profile', label: 'Profile', icon: '👤' },
 ];
 
